@@ -60,7 +60,7 @@ namespace Bomberman.Server.WebSocketHandlers
                     switch (command.Type)
                     {
                         case string type when type.StartsWith("CLIENT_LOBBY"):
-                            await _lobbyHandler.HandleAsync(playerId, command.Type, command.Payload, webSocket);
+                            await _lobbyHandler.HandleAsync(playerId, command.Type, command.Payload.GetString(), webSocket);
                             break;
                         case string type when type.StartsWith("CLIENT_GAME"):
                             await _gameHandler.HandleAsync(playerId, command.Type, command.Payload, webSocket);
@@ -93,7 +93,7 @@ namespace Bomberman.Server.WebSocketHandlers
         private class CommandMessage
         {
             public string Type { get; set; }
-            public string Payload { get; set; }
+            public JsonElement Payload { get; set; }
         }
     }
 }

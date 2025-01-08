@@ -25,6 +25,16 @@ namespace Bomberman.Server.GameLogic
                 _gameState.Playfield.Bombs.Add(bomb);
             }
         }
+        
+        public void MovePlayer(string playerId, string direction, bool isMoving)
+        {
+            Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
+            {
+                player.IsMoving = isMoving;
+                player.PlayerDirection = direction;
+            }
+        }
 
         public void removePlayer(string playerId)
         {
@@ -99,7 +109,26 @@ namespace Bomberman.Server.GameLogic
                 {
                     _gameState.Playfield.Players.RemoveAll(p => p.Id == player.Id);
                 }
-
+                
+                //move player
+                if (player.IsMoving)
+                {
+                    switch (player.PlayerDirection)
+                    {
+                        case Direction.UP:
+                            player.Y -= 0.1;
+                            break;
+                        case Direction.DOWN:
+                            player.Y += 0.1;
+                            break;
+                        case Direction.LEFT:
+                            player.X -= 0.1;
+                            break;
+                        case Direction.RIGHT:
+                            player.X += 0.1;
+                            break;
+                    }
+                }
                 //TODO: check if player position is valid
 
                 //TODO: check if player picked up an item

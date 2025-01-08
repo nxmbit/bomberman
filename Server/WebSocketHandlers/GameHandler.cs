@@ -1,5 +1,6 @@
 using Bomberman.Server.GameLogic;
 using System.Net.WebSockets;
+using System.Text.Json;
 using System.Timers;
 
 namespace Bomberman.Server.WebSocketHandlers
@@ -31,7 +32,7 @@ namespace Bomberman.Server.WebSocketHandlers
             return _gameService.isGameRunning;
         }
 
-        public async Task HandleAsync(string playerId, string type, string direction, WebSocket socket)
+        public async Task HandleAsync(string playerId, string type, JsonElement payload, WebSocket socket)
         {
             switch (type)
             {
@@ -41,6 +42,7 @@ namespace Bomberman.Server.WebSocketHandlers
                     // } else {
                     //
                     // }
+                    _gameService.PlaceBomb(playerId);
                     await BroadcastGameState();
                     break;
 
@@ -50,6 +52,9 @@ namespace Bomberman.Server.WebSocketHandlers
                     // } else {
                     //
                     // }
+                    //read payload as json
+                    Dictionary<string, dynamic> data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(payload);
+                    _gameService.MovePlayer(playerId, data["Direction"].ToString(),data["KeyDown"].ToString()=="True");
                     await BroadcastGameState();
                     break;
             }
