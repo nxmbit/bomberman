@@ -8,18 +8,19 @@ namespace Bomberman.Server.GameLogic
 
         public GameState GetGameState() => _gameState;
 
-        public void StartGame(Dictionary<string, Player> Players)
+        public void StartGame(List<Player> Players)
         {
             _gameState.Playfield = new Playfield(15, 15, 0.5, Players);
         }
 
         public void PlaceBomb(string playerId)
         {
-            if (!_gameState.Playfield.Players.TryGetValue(playerId, out var player))
-                return;
-
-            var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y));
-            _gameState.Playfield.Bombs.Add(bomb);
+            Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
+            {
+                var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y));
+                _gameState.Playfield.Bombs.Add(bomb);
+            }
         }
 
 
@@ -41,7 +42,7 @@ namespace Bomberman.Server.GameLogic
                 _gameState.Playfield.Bombs.Remove(bomb);
                 ExplodeBomb(bomb);
             }
-            
+
             //tick explosions
             var explosionsToRemove = new List<Explosion>();
             foreach (var explosion in _gameState.Playfield.Explosions)
@@ -52,35 +53,39 @@ namespace Bomberman.Server.GameLogic
                     explosionsToRemove.Add(explosion);
                 }
             }
-            
+
             foreach (var explosion in explosionsToRemove)
             {
                 _gameState.Playfield.Explosions.Remove(explosion);
             }
-            
+
             //tick players
-            foreach (var player in _gameState.Playfield.Players.Values)
+            foreach (var player in _gameState.Playfield.Players.ToList())
             {
                 //if player is invincible and not in an explosion revoke invincibility
-                if (player.IsInvincible && !_gameState.Playfield.Explosions.Any(e => e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)))
+                if (player.IsInvincible && !_gameState.Playfield.Explosions.Any(e =>
+                        e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)))
                 {
                     player.IsInvincible = false;
                 }
+
                 //ckech if player is in explosion and is not invincible
-                if (_gameState.Playfield.Explosions.Any(e => e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y))&& player.IsInvincible == false)
+                if (_gameState.Playfield.Explosions.Any(e =>
+                        e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)) &&
+                    player.IsInvincible == false)
                 {
                     player.Lives--;
                     player.IsInvincible = true;
                 }
-                
+
                 //if player has no lives left remove him
                 if (player.Lives <= 0)
                 {
-                    _gameState.Playfield.Players.Remove(player.Id, out _);
+                    _gameState.Playfield.Players.RemoveAll(p => p.Id == player.Id);
                 }
-                
+
                 //TODO: check if player position is valid
-                
+
                 //TODO: check if player picked up an item
             }
         }

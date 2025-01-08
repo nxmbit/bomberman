@@ -1,7 +1,8 @@
 namespace Bomberman.Server.GameLogic
 {
-    public class Lobby {
-        public Dictionary<string, Player> Players { get; set; } = new Dictionary<string, Player>();
+    public class Lobby
+    {
+        public List<Player> Players = new List<Player>();
         public const int MaxPlayers = 4;
         public int PlayersInLobby => Players.Count;
 

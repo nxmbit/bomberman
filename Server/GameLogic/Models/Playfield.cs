@@ -11,11 +11,11 @@ namespace Bomberman.Server.GameLogic
         public List<Bomb> Bombs { get; set; }
         public List<Explosion> Explosions { get; set; }
         public List<Item> Items { get; set; }
-        public Dictionary<string, Player> Players { get; set; }
+        public List<Player> Players { get; set; }
         public Timer Timer { get; set; }
 
         //TODO generate map and items
-        public Playfield(int width, int height, double blockDensity, Dictionary<string, Player> Players)
+        public Playfield(int width, int height, double blockDensity, List<Player> Players)
         {
             this.Width = width;
             this.Height = height;

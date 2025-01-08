@@ -8,23 +8,25 @@ namespace Bomberman.Server.GameLogic
 
         public void SetPlayerName(string playerId, string name)
         {
-            if (_lobby.Players.TryGetValue(playerId, out var player))
+            var player = _lobby.Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
             {
                 player.Name = name;
             }
         }
+
         public void AddPlayer(string playerId, string name)
         {
-            if (!_lobby.Players.ContainsKey(playerId))
+            if (_lobby.Players.TrueForAll(p => p.Id != playerId))
             {
-            var player = new Player(playerId, name);
-            _lobby.Players.Add(playerId, player);
+                _lobby.Players.Add(new Player(playerId, name));
             }
         }
 
         public void SetPlayerReady(string playerId)
         {
-            if (_lobby.Players.TryGetValue(playerId, out var player))
+            var player = _lobby.Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
             {
                 player.IsReady = true;
             }
@@ -32,20 +34,21 @@ namespace Bomberman.Server.GameLogic
 
         public void SetPlayerUnready(string playerId)
         {
-            if (_lobby.Players.TryGetValue(playerId, out var player))
+            var player = _lobby.Players.FirstOrDefault(p => p.Id == playerId);
+            if (player != null)
             {
                 player.IsReady = false;
             }
-        }        
+        }
 
         public void RemovePlayer(string playerId)
         {
-            _lobby.Players.Remove(playerId);
+            _lobby.Players.RemoveAll(p => p.Id == playerId);
         }
 
         public bool AreAllPlayersReady()
         {
-            return _lobby.Players.Values.All(p => p.IsReady);
+            return _lobby.Players.TrueForAll(p => p.IsReady);
         }
 
         public bool CanAddPlayer()
@@ -53,7 +56,7 @@ namespace Bomberman.Server.GameLogic
             return _lobby.PlayersInLobby < Lobby.MaxPlayers;
         }
 
-        public Dictionary<string, Player> GetPlayers()
+        public List<Player> GetPlayers()
         {
             return _lobby.Players;
         }
@@ -63,7 +66,7 @@ namespace Bomberman.Server.GameLogic
             return new
             {
                 Type = ServerCommandType.SERVER_LOBBY_UPDATE,
-                Payload = _lobby.Players.Values.Select(p => new { p.Id, p.Name, p.IsReady })
+                Payload = _lobby.Players.Select(p => new { p.Id, p.Name, p.IsReady })
             };
         }
     }

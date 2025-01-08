@@ -44,17 +44,17 @@ namespace Bomberman.Server.WebSocketHandlers
             }
         }
 
-        public void startGame(Dictionary<string, Player> Players)
+        public void startGame(List<Player> Players)
         {
             _gameService.StartGame(Players);
             _timer.Enabled = true;
 
         }
 
-        private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+        private async void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
             _gameService.Tick();
-            BroadcastGameState();
+            await BroadcastGameState();
         }
 
         private async Task BroadcastGameState()
