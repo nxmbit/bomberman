@@ -25,7 +25,7 @@ namespace Bomberman.Server.GameLogic
                 _gameState.Playfield.Bombs.Add(bomb);
             }
         }
-        
+
         public void MovePlayer(string playerId, string direction, bool isMoving)
         {
             Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
@@ -51,7 +51,7 @@ namespace Bomberman.Server.GameLogic
                 Console.WriteLine("Stopping the game as there are no players connected");
                 return;
             }
-            
+
             //tick bombs
             var bombsToRemove = new List<Bomb>();
             foreach (var bomb in _gameState.Playfield.Bombs)
@@ -71,7 +71,7 @@ namespace Bomberman.Server.GameLogic
 
             //tick explosions
             var explosionsToRemove = new List<Explosion>();
-            foreach (var explosion in _gameState.Playfield.Explosions)
+            foreach (Explosion explosion in _gameState.Playfield.Explosions)
             {
                 explosion.Time--;
                 if (explosion.Time <= 0)
@@ -109,33 +109,104 @@ namespace Bomberman.Server.GameLogic
                 {
                     _gameState.Playfield.Players.RemoveAll(p => p.Id == player.Id);
                 }
-                
+
                 //move player
                 if (player.IsMoving)
                 {
+                    var newX = player.X;
+                    var newY = player.Y;
+
                     switch (player.PlayerDirection)
                     {
                         case Direction.UP:
-                            player.Y -= 0.1;
+                            newY -= 0.1;
                             break;
                         case Direction.DOWN:
-                            player.Y += 0.1;
+                            newY += 0.1;
                             break;
                         case Direction.LEFT:
-                            player.X -= 0.1;
+                            newX -= 0.1;
                             break;
                         case Direction.RIGHT:
-                            player.X += 0.1;
+                            newX += 0.1;
                             break;
                     }
+
+                    // Check for collision with walls and blocks
+                    bool isCollision = _gameState.Playfield.Walls.Any(w =>
+                                           newX + 1> w.X && newX < w.X + 1 &&
+                                           newY + 1 > w.Y && newY < w.Y + 1) ||
+                                       _gameState.Playfield.Blocks.Any(b =>
+                                           newX + 1 > b.X && newX < b.X + 1 &&
+                                           newY + 1 > b.Y && newY < b.Y + 1);
+
+                    if (isCollision)
+                    {
+                        //snap to grid only if there is no block or wall in the direction of movement from the snapped position
+                        switch (player.PlayerDirection)
+                        {
+                            case Direction.UP:
+                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) == w.X &&Math.Round(player.Y) -1 == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) == b.X && Math.Round(player.Y) - 1 == b.Y))
+                                {
+                                    newX = Math.Round(player.X);
+                                }
+                                else
+                                {
+                                    newX = player.X;
+                                    newY = player.Y;
+                                }
+
+                                break;
+                            case Direction.DOWN:
+                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) == w.X && Math.Round(player.Y) + 1 == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) == b.X && Math.Round(player.Y) + 1 == b.Y))
+                                {
+                                    newX = Math.Round(player.X);
+                                }
+                                else
+                                {
+                                    newX = player.X;
+                                    newY = player.Y;
+                                }
+
+                                break;
+                            case Direction.LEFT:
+                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) - 1 == w.X && Math.Round(player.Y) == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) - 1 == b.X && Math.Round(player.Y) == b.Y))
+                                {
+                                    newY = Math.Round(player.Y);
+                                }
+                                else
+                                {
+                                    newX = player.X;
+                                    newY = player.Y;
+                                }
+                                break;
+                            case Direction.RIGHT:
+                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) + 1 == w.X && Math.Round(player.Y) == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) + 1 == b.X && Math.Round(player.Y) == b.Y))
+                                {
+                                    newY = Math.Round(player.Y);
+                                }
+                                else
+                                {
+                                    newX = player.X;
+                                    newY = player.Y;
+                                }
+                                break;
+                        }
+                    }
+
+                    player.X = newX;
+                    player.Y = newY;
                 }
-                //TODO: check if player position is valid
 
                 //TODO: check if player picked up an item
             }
         }
 
-        private void ExplodeBomb(Bomb bomb)
+        private void ExplodeBomb(Bomb bomb) //TODO why 2 calls to this method?
         {
             // search for walls and blocks in explosion range
             // add an explosion for each valid tile
@@ -143,9 +214,9 @@ namespace Bomberman.Server.GameLogic
             //filter the walls to know where the explosion stops
             var walls = _gameState.Playfield.Walls.Where(w => w.X == bomb.X || w.Y == bomb.Y).ToList();
             var blocks = _gameState.Playfield.Blocks.Where(b => b.X == bomb.X || b.Y == bomb.Y).ToList();
+            List<Block> blocksToRemove = new List<Block>();
             //step through bombs power
-            List<Explosion> explosions = new List<Explosion>();
-            explosions.Add(new Explosion(bomb.X, bomb.Y, bomb.OwnerId));
+            _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y, bomb.OwnerId));
             //right
             for (int i = 1; i < bomb.Range; i++)
             {
@@ -153,11 +224,11 @@ namespace Bomberman.Server.GameLogic
                     break;
                 if (blocks.Any(b => b.X == bomb.X + i && b.Y == bomb.Y))
                 {
-                    blocks.RemoveAll(b => b.X == bomb.X + i && b.Y == bomb.Y);
+                    blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X + i && b.Y == bomb.Y));
                     break;
                 }
 
-                explosions.Add(new Explosion(bomb.X + i, bomb.Y, bomb.OwnerId));
+                _gameState.Playfield.Explosions.Add(new Explosion(bomb.X + i, bomb.Y, bomb.OwnerId));
             }
 
             //left
@@ -167,11 +238,11 @@ namespace Bomberman.Server.GameLogic
                     break;
                 if (blocks.Any(b => b.X == bomb.X - i && b.Y == bomb.Y))
                 {
-                    blocks.RemoveAll(b => b.X == bomb.X - i && b.Y == bomb.Y);
+                    blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X - i && b.Y == bomb.Y));
                     break;
                 }
 
-                explosions.Add(new Explosion(bomb.X - i, bomb.Y, bomb.OwnerId));
+                _gameState.Playfield.Explosions.Add(new Explosion(bomb.X - i, bomb.Y, bomb.OwnerId));
             }
 
             //up
@@ -181,11 +252,11 @@ namespace Bomberman.Server.GameLogic
                     break;
                 if (blocks.Any(b => b.X == bomb.X && b.Y == bomb.Y + i))
                 {
-                    blocks.RemoveAll(b => b.X == bomb.X && b.Y == bomb.Y + i);
+                    blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X && b.Y == bomb.Y + i));
                     break;
                 }
 
-                explosions.Add(new Explosion(bomb.X, bomb.Y + i, bomb.OwnerId));
+                _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y + i, bomb.OwnerId));
             }
 
             //down
@@ -195,12 +266,18 @@ namespace Bomberman.Server.GameLogic
                     break;
                 if (blocks.Any(b => b.X == bomb.X && b.Y == bomb.Y - i))
                 {
-                    blocks.RemoveAll(b => b.X == bomb.X && b.Y == bomb.Y - i);
+                    blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X && b.Y == bomb.Y - i));
                     break;
                 }
 
-                explosions.Add(new Explosion(bomb.X, bomb.Y - i, bomb.OwnerId));
+                _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y - i, bomb.OwnerId));
+            }
+            //remove blocks that were destroyed
+            foreach (var block in blocksToRemove)
+            {
+                _gameState.Playfield.Blocks.Remove(block);
             }
         }
+        
     }
 }

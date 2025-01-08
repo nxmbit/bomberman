@@ -4,14 +4,15 @@ namespace Bomberman.Server.GameLogic
     {
         public int X { get; set; }
         public int Y { get; set; }
-        public int Time = 3 * GlobalSettings.TICK_RATE;
-        public string PlayerId { get; set; }
+        public int Time { get; set; }
+        public string OwnerId { get; set; }
 
-        public Explosion(int x, int y, string playerId)
+        public Explosion(int x, int y, string OwnerId)
         {
             this.X = x;
             this.Y = y;
-            this.PlayerId = playerId;
+            this.OwnerId = OwnerId;
+            this.Time = GlobalSettings.TICK_RATE*GlobalSettings.EXPLOSION_TIMER;
         }
     }
 }
