@@ -14,10 +14,21 @@ namespace Bomberman.Server.WebSocketHandlers
         public GameHandler(GameService gameService)
         {
             _gameService = gameService;
+            _gameService.GameOver += OnGameOver;
             _timer = new System.Timers.Timer(_timerInterval);
             _timer.Elapsed += OnTimerElapsed;
             _timer.AutoReset = true;
             _timer.Enabled = false;
+        }
+
+        public void RemovePlayer(string playerId)
+        {
+            _gameService.removePlayer(playerId);
+        }
+
+        public bool IsGameStarted()
+        {
+            return _gameService.isGameRunning;
         }
 
         public async Task HandleAsync(string playerId, string type, string direction, WebSocket socket)
@@ -48,13 +59,18 @@ namespace Bomberman.Server.WebSocketHandlers
         {
             _gameService.StartGame(Players);
             _timer.Enabled = true;
-
         }
 
         private async void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
             _gameService.Tick();
             await BroadcastGameState();
+        }
+
+        private void OnGameOver()
+        {
+            _timer.Enabled = false;
+            Console.WriteLine("Game over");
         }
 
         private async Task BroadcastGameState()

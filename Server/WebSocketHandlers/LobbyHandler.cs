@@ -7,13 +7,11 @@ namespace Bomberman.Server.WebSocketHandlers
     {
         private readonly LobbyService _lobbyService;
         private readonly GameHandler _gameHandler;
-        private bool _isGameStarted { get; set; }
 
         public LobbyHandler(LobbyService lobbyService, GameHandler gameHandler)
         {
             _lobbyService = lobbyService;
             _gameHandler = gameHandler;
-            _isGameStarted = false;
         }
 
         public async Task HandleAsync(string playerId, string type, string payload, WebSocket socket)
@@ -49,7 +47,6 @@ namespace Bomberman.Server.WebSocketHandlers
                         await SendMessageAsync(socket, new { Type = ServerCommandType.SERVER_GAME_START });
                         Console.WriteLine(_lobbyService.GetPlayers());
                         _gameHandler.startGame(_lobbyService.GetPlayers());
-                        _isGameStarted = true; // TODO: remove?
                     }
                     break;
 

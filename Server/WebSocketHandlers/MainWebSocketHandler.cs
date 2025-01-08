@@ -17,13 +17,26 @@ namespace Bomberman.Server.WebSocketHandlers
             _lobbyService = lobbyService;
             _gameHandler = new GameHandler(gameService);
             _lobbyHandler = new LobbyHandler(lobbyService, _gameHandler);
-
         }
 
         public async Task HandleAsync(WebSocket webSocket)
         {
+            if (_lobbyService.CanAddPlayer() == false)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Lobby is full", CancellationToken.None);
+                Console.WriteLine("Connection attempt rejected: Lobby is full");
+                return;
+            }
+
+            if (_gameHandler.IsGameStarted())
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Game is in progress", CancellationToken.None);
+                Console.WriteLine("Connection attempt rejected: Game is in progress");
+                return;
+            }
+
             var playerId = Guid.NewGuid().ToString();
-            _sockets.Add(webSocket);
+            _sockets.TryAdd(webSocket, playerId);
             Console.WriteLine($"Player {playerId} connected");
 
             var buffer = new byte[1024 * 4];
@@ -54,10 +67,26 @@ namespace Bomberman.Server.WebSocketHandlers
                             break;
                     }
                 }
+            } catch (Exception e)
+            {
+                Console.WriteLine("Failed to receive message from client");
             }
             finally
             {
-                _lobbyService.RemovePlayer(playerId); // remove player from lobby
+                if (_gameHandler.IsGameStarted())
+                {
+                    // remove player from game
+                    _gameHandler.RemovePlayer(playerId);
+                } else {
+                    // remove player from lobby
+                    _lobbyService.RemovePlayer(playerId);
+                    // broadcast updated lobby state
+                    var lobbyState = _lobbyService.GetLobbyState();
+                    await BroadcastMessageAsync(lobbyState);
+                }
+
+                _sockets.TryRemove(webSocket, out _); // remove WebSocket from collection
+                Console.WriteLine($"Player {playerId} disconnected");
             }
         }
 

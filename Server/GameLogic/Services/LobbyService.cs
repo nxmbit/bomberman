@@ -17,7 +17,7 @@ namespace Bomberman.Server.GameLogic
 
         public void AddPlayer(string playerId, string name)
         {
-            if (_lobby.Players.TrueForAll(p => p.Id != playerId))
+            if (_lobby.Players.TrueForAll(p => p.Id != playerId) && _lobby.MaxPlayers > _lobby.PlayersInLobby)
             {
                 _lobby.Players.Add(new Player(playerId, name));
             }
@@ -53,7 +53,7 @@ namespace Bomberman.Server.GameLogic
 
         public bool CanAddPlayer()
         {
-            return _lobby.PlayersInLobby < Lobby.MaxPlayers;
+            return _lobby.PlayersInLobby < _lobby.MaxPlayers;
         }
 
         public List<Player> GetPlayers()

@@ -75,6 +75,7 @@ namespace Bomberman.Server.GameLogic
             
             DisplayPlayfield();
         }
+
         public void DisplayPlayfield()
         {
             char[,] display = new char[Height, Width];

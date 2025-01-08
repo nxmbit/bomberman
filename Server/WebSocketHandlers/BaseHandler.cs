@@ -7,8 +7,7 @@ namespace Bomberman.Server.WebSocketHandlers
 {
     public abstract class BaseHandler
     {
-        protected static readonly ConcurrentBag<WebSocket> _sockets = new ConcurrentBag<WebSocket>();
-
+        protected static readonly ConcurrentDictionary<WebSocket, string> _sockets = new ConcurrentDictionary<WebSocket, string>();
 
         protected async Task SendMessageAsync(WebSocket socket, object message)
         {
@@ -24,7 +23,7 @@ namespace Bomberman.Server.WebSocketHandlers
 
         protected async Task BroadcastMessageAsync(object message)
         {
-            foreach (var socket in _sockets)
+            foreach (var socket in _sockets.Keys)
             {
                 await SendMessageAsync(socket, message);
             }

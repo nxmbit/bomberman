@@ -4,13 +4,16 @@ namespace Bomberman.Server.GameLogic
 {
     public class GameService
     {
+        public bool isGameRunning { get; set; }
         private readonly GameState _gameState = new GameState();
+        public event Action GameOver;
 
         public GameState GetGameState() => _gameState;
 
         public void StartGame(List<Player> Players)
         {
             _gameState.Playfield = new Playfield(15, 15, 0.5, Players);
+            isGameRunning = true;
         }
 
         public void PlaceBomb(string playerId)
@@ -23,9 +26,22 @@ namespace Bomberman.Server.GameLogic
             }
         }
 
+        public void removePlayer(string playerId)
+        {
+            _gameState.Playfield.Players.RemoveAll(p => p.Id == playerId);
+        }
 
         public void Tick()
         {
+            //check if there are no players left
+            if (_gameState.Playfield.Players.Count == 0)
+            {
+                isGameRunning = false;
+                GameOver?.Invoke();
+                Console.WriteLine("Stopping the game as there are no players connected");
+                return;
+            }
+            
             //tick bombs
             var bombsToRemove = new List<Bomb>();
             foreach (var bomb in _gameState.Playfield.Bombs)
