@@ -44,7 +44,10 @@ namespace Bomberman.Server.WebSocketHandlers
                     await BroadcastLobbyState();
                     if (_lobbyService.AreAllPlayersReady())
                     {
-                        await SendMessageAsync(socket, new { Type = ServerCommandType.SERVER_GAME_START });
+                        foreach (var sock in _sockets.Keys)
+                        {
+                            await SendMessageAsync(sock, new { Type = ServerCommandType.SERVER_GAME_START });
+                        }
                         Console.WriteLine(_lobbyService.GetPlayers());
                         _gameHandler.startGame(_lobbyService.GetPlayers());
                     }
