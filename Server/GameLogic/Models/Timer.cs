@@ -11,7 +11,6 @@ public class Timer
         if (TicksLeft % GlobalSettings.TICK_RATE == 0)
         {
             SecondsLeft--;
-            Console.WriteLine($"Seconds left: {SecondsLeft}");
         }
     }
 }

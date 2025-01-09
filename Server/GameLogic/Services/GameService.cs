@@ -26,7 +26,8 @@ namespace Bomberman.Server.GameLogic
         public void PlaceBomb(string playerId)
         {
             Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
-            if (player != null)
+            int bombsPlaced = _gameState.Playfield.Bombs.Count(b => b.OwnerId == playerId);
+            if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit)
             {
                 var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y));
                 _gameState.Playfield.Bombs.Add(bomb);
@@ -36,7 +37,7 @@ namespace Bomberman.Server.GameLogic
         public void MovePlayer(string playerId, string direction, bool isMoving)
         {
             Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
-            if (player != null)
+            if (player != null && player.Lives > 0)
             {
                 player.IsMoving = isMoving;
                 player.PlayerDirection = direction;
@@ -50,8 +51,6 @@ namespace Bomberman.Server.GameLogic
 
         public void Tick()
         {
-            //TODO: implement killing players
-
             //check if there are no players left
             if (_gameState.Playfield.Players.Count == 0)
             {
