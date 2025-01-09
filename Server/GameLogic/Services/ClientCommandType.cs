@@ -10,6 +10,7 @@ public static class ClientCommandType
     public const string CLIENT_LOBBY_READY = "CLIENT_LOBBY_READY";
     public const string CLIENT_LOBBY_UNREADY = "CLIENT_LOBBY_UNREADY";
     public const string CLIENT_LOBBY_CHANGE_NAME = "CLIENT_LOBBY_CHANGE_NAME";
+    public const string CLIENT_LOBBY_UPDATE_SETTINGS = "CLIENT_LOBBY_UPDATE_SETTINGS";
     public const string CLIENT_GAME_MOVE = "CLIENT_GAME_MOVE";
     public const string CLIENT_GAME_BOMB = "CLIENT_GAME_BOMB";
 }

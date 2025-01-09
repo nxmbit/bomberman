@@ -2,8 +2,14 @@
 
 public class Timer
 {
-    private int TicksLeft = GlobalSettings.TICK_RATE * GlobalSettings.GAME_TIME;
-    public int SecondsLeft { get; set; } = GlobalSettings.GAME_TIME;
+    private int TicksLeft;
+    public int SecondsLeft { get; set; }
+
+    public Timer(int seconds)
+    {
+        SecondsLeft = seconds;
+        TicksLeft = seconds * GlobalSettings.TICK_RATE;
+    }
 
     public void Tick()
     {

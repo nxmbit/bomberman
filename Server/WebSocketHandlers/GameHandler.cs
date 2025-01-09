@@ -50,9 +50,9 @@ namespace Bomberman.Server.WebSocketHandlers
             }
         }
 
-        public void startGame(List<Player> Players)
+        public void startGame(List<Player> Players, GameParameters gameParameters)
         {
-            _gameService.StartGame(Players);
+            _gameService.StartGame(Players, gameParameters);
             _timer.Enabled = true;
         }
 

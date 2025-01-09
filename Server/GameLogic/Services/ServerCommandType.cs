@@ -7,6 +7,7 @@ public static class ServerCommandType {
     public const string SERVER_LOBBY_JOIN = "SERVER_LOBBY_JOIN";
     public const string SERVER_LOBBY_LEAVE = "SERVER_LOBBY_LEAVE";
     public const string SERVER_LOBBY_UPDATE = "SERVER_LOBBY_UPDATE";
+    public const string SERVER_LOBBY_UPDATE_SETTINGS = "SERVER_LOBBY_UPDATE_SETTINGS";
     public const string SERVER_GAME_START = "SERVER_GAME_START";
     public const string SERVER_GAME_UPDATE = "SERVER_GAME_UPDATE";
     public const string SERVER_GAME_OVER = "SERVER_GAME_OVER";

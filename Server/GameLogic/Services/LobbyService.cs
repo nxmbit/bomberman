@@ -5,6 +5,22 @@ namespace Bomberman.Server.GameLogic
     public class LobbyService
     {
         private readonly Lobby _lobby = new Lobby();
+        private GameParameters _gameParameters = new GameParameters();
+
+        public LobbyService()
+        {
+            _gameParameters.setParameters(15, 15, 0.5, 180, 3);
+        }
+
+        public void SetGameParameters(int width, int height, double blockDensity, int gameTime, int lives)
+        {
+            _gameParameters.setParameters(width, height, blockDensity, gameTime, lives);
+        }
+
+        public GameParameters GetGameParameters()
+        {
+            return _gameParameters;
+        }
 
         public void SetPlayerName(string playerId, string name)
         {
@@ -61,9 +77,15 @@ namespace Bomberman.Server.GameLogic
             return _lobby.Players;
         }
 
+        private void ResetGameParameters()
+        {
+            _gameParameters.setParameters(15, 15, 0.5 , 180, 3);
+        }
+
         public void resetLobby()
         {
             _lobby.Players.Clear();
+            ResetGameParameters();
         }
 
         public object GetLobbyState()
@@ -72,6 +94,15 @@ namespace Bomberman.Server.GameLogic
             {
                 Type = ServerCommandType.SERVER_LOBBY_UPDATE,
                 Payload = _lobby.Players.Select(p => new { p.Id, p.Name, p.IsReady })
+            };
+        }
+
+        public object GetLobbySettings()
+        {
+            return new
+            {
+                Type = ServerCommandType.SERVER_LOBBY_UPDATE_SETTINGS,
+                Payload = _gameParameters
             };
         }
     }
