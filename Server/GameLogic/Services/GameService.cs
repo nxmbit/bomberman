@@ -123,12 +123,6 @@ namespace Bomberman.Server.GameLogic
                     player.IsInvincible = true;
                 }
 
-                //if player has no lives left remove him
-                if (player.Lives <= 0)
-                {
-                    _gameState.Playfield.Players.RemoveAll(p => p.Id == player.Id);
-                }
-
                 //move player
                 if (player.IsMoving)
                 {
