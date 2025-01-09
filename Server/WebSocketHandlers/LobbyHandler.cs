@@ -50,6 +50,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         }
                         Console.WriteLine(_lobbyService.GetPlayers());
                         _gameHandler.startGame(_lobbyService.GetPlayers());
+                        _lobbyService.resetLobby();
                     }
                     break;
 

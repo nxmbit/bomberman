@@ -5,6 +5,5 @@ namespace Bomberman.Server.GameLogic
         public List<Player> Players = new List<Player>();
         public readonly int MaxPlayers = 4;
         public int PlayersInLobby => Players.Count;
-
     }
 }

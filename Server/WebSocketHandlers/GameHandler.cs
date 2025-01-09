@@ -37,21 +37,11 @@ namespace Bomberman.Server.WebSocketHandlers
             switch (type)
             {
                 case ClientCommandType.CLIENT_GAME_BOMB:
-                    // if () {
-                    //
-                    // } else {
-                    //
-                    // }
                     _gameService.PlaceBomb(playerId);
                     await BroadcastGameState();
                     break;
 
                 case ClientCommandType.CLIENT_GAME_MOVE:
-                    // if () {
-                    //
-                    // } else {
-                    //
-                    // }
                     //read payload as json
                     Dictionary<string, dynamic> data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(payload);
                     _gameService.MovePlayer(playerId, data["Direction"].ToString(),data["KeyDown"].ToString()=="True");
@@ -72,9 +62,15 @@ namespace Bomberman.Server.WebSocketHandlers
             await BroadcastGameState();
         }
 
-        private void OnGameOver()
+        private async void OnGameOver(string outcome)
         {
             _timer.Enabled = false;
+            var msg = new
+            {
+                Type = ServerCommandType.SERVER_GAME_OVER,
+                Payload = outcome
+            };
+            await BroadcastMessageAsync(msg);
             Console.WriteLine("Game over");
         }
 

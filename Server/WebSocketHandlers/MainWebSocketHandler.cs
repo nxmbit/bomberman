@@ -12,11 +12,13 @@ namespace Bomberman.Server.WebSocketHandlers
         private readonly LobbyHandler _lobbyHandler;
         private readonly LobbyService _lobbyService;
 
-        public MainWebSocketHandler(LobbyService lobbyService, GameService gameService)
+        public MainWebSocketHandler(LobbyService lobbyService, GameHandler gameHandler, LobbyHandler lobbyHandler)
         {
             _lobbyService = lobbyService;
-            _gameHandler = new GameHandler(gameService);
-            _lobbyHandler = new LobbyHandler(lobbyService, _gameHandler);
+            _gameHandler = gameHandler;
+            _lobbyHandler = lobbyHandler;
+            //_gameHandler = new GameHandler(gameService);
+            //_lobbyHandler = new LobbyHandler(lobbyService, _gameHandler);
         }
 
         public async Task HandleAsync(WebSocket webSocket)

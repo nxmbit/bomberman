@@ -9,4 +9,5 @@ public static class ServerCommandType {
     public const string SERVER_LOBBY_UPDATE = "SERVER_LOBBY_UPDATE";
     public const string SERVER_GAME_START = "SERVER_GAME_START";
     public const string SERVER_GAME_UPDATE = "SERVER_GAME_UPDATE";
+    public const string SERVER_GAME_OVER = "SERVER_GAME_OVER";
 }

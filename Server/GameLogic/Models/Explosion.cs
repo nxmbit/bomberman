@@ -12,7 +12,7 @@ namespace Bomberman.Server.GameLogic
             this.X = x;
             this.Y = y;
             this.OwnerId = OwnerId;
-            this.Time = GlobalSettings.TICK_RATE*GlobalSettings.EXPLOSION_TIMER;
+            this.Time = GlobalSettings.TICK_RATE * GlobalSettings.EXPLOSION_TIMER;
         }
     }
 }

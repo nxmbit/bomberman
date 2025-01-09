@@ -72,50 +72,7 @@ namespace Bomberman.Server.GameLogic
                     }
                 }
             }
-            
-            DisplayPlayfield();
         }
 
-        public void DisplayPlayfield()
-        {
-            char[,] display = new char[Height, Width];
-
-            // Initialize the display with empty spaces
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    display[y, x] = ' ';
-                }
-            }
-
-            // Place blocks
-            foreach (var block in Blocks)
-            {
-                display[block.Y, block.X] = 'B';
-            }
-
-            // Place walls
-            foreach (var wall in Walls)
-            {
-                display[wall.Y, wall.X] = 'W';
-            }
-
-            // Place items
-            foreach (var item in Items)
-            {
-                display[item.Y, item.X] = 'I';
-            }
-
-            // Display the playfield
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    Console.Write(display[y, x]);
-                }
-                Console.WriteLine();
-            }
-        }
     }
 }

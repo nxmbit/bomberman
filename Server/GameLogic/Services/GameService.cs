@@ -2,11 +2,18 @@ using Bomberman.Server.GameLogic;
 
 namespace Bomberman.Server.GameLogic
 {
+    public static class OutcomeType
+    {
+        public const string TIME_OUT = "TIME_OUT";
+        public const string ALL_ELIMINATED = "ALL_ELIMINATED";
+        public const string NO_PLAYERS_CONNECTED = "NO_PLAYERS_CONNECTED";
+    }
+
     public class GameService
     {
         public bool isGameRunning { get; set; }
         private readonly GameState _gameState = new GameState();
-        public event Action GameOver;
+        public event Action<string> GameOver;
 
         public GameState GetGameState() => _gameState;
 
@@ -43,12 +50,24 @@ namespace Bomberman.Server.GameLogic
 
         public void Tick()
         {
+            //TODO: implement killing players
+
             //check if there are no players left
             if (_gameState.Playfield.Players.Count == 0)
             {
                 isGameRunning = false;
-                GameOver?.Invoke();
+                GameOver?.Invoke(OutcomeType.NO_PLAYERS_CONNECTED);
                 Console.WriteLine("Stopping the game as there are no players connected");
+                return;
+            }
+
+            //tick timer
+            _gameState.Playfield.Timer.Tick();
+            if (_gameState.Playfield.Timer.SecondsLeft <= 0)
+            {
+                isGameRunning = false;
+                GameOver?.Invoke(OutcomeType.TIME_OUT);
+                Console.WriteLine("Stopping the game as the timer ran out");
                 return;
             }
 

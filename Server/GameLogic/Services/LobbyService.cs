@@ -61,6 +61,11 @@ namespace Bomberman.Server.GameLogic
             return _lobby.Players;
         }
 
+        public void resetLobby()
+        {
+            _lobby.Players.Clear();
+        }
+
         public object GetLobbyState()
         {
             return new

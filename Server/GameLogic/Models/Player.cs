@@ -19,6 +19,7 @@ namespace Bomberman.Server.GameLogic
         public bool IsReady { get; set; }
         public bool IsMoving = false;
         public String PlayerDirection = Direction.DOWN;
+        public int Score {get; set;}
 
         public Player(string id, string name)
         {
@@ -26,6 +27,7 @@ namespace Bomberman.Server.GameLogic
             Name = name;
             X = 0;
             Y = 0;
+            Score = 0;
             IsReady = false;
         }
     }

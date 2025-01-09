@@ -12,5 +12,4 @@ public static class ClientCommandType
     public const string CLIENT_LOBBY_CHANGE_NAME = "CLIENT_LOBBY_CHANGE_NAME";
     public const string CLIENT_GAME_MOVE = "CLIENT_GAME_MOVE";
     public const string CLIENT_GAME_BOMB = "CLIENT_GAME_BOMB";
-
 }

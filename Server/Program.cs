@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddSingleton<LobbyService>();
+builder.Services.AddSingleton<GameHandler>();
+builder.Services.AddSingleton<LobbyHandler>();
 builder.Services.AddTransient<MainWebSocketHandler>();
 
 var app = builder.Build();

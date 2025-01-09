@@ -2,5 +2,16 @@
 
 public class Timer
 {
-    private int TimeLeft { get; set; }
+    private int TicksLeft = GlobalSettings.TICK_RATE * GlobalSettings.GAME_TIME;
+    public int SecondsLeft { get; set; } = GlobalSettings.GAME_TIME;
+
+    public void Tick()
+    {
+        TicksLeft--;
+        if (TicksLeft % GlobalSettings.TICK_RATE == 0)
+        {
+            SecondsLeft--;
+            Console.WriteLine($"Seconds left: {SecondsLeft}");
+        }
+    }
 }

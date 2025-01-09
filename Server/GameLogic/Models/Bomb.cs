@@ -7,7 +7,7 @@ namespace Bomberman.Server.GameLogic
         public int Y { get; set; }
         public int Range { get; set; } = 2;
         
-        public int Fuse { get; set; } = 3*GlobalSettings.TICK_RATE;
+        public int Fuse { get; set; } = 3 * GlobalSettings.TICK_RATE;
 
         public Bomb(string ownerId, int x, int y)
         {
