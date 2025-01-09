@@ -19,7 +19,7 @@ namespace Bomberman.Server.GameLogic
 
         public void StartGame(List<Player> Players)
         {
-            _gameState.Playfield = new Playfield(15, 15, 1, Players);
+            _gameState.Playfield = new Playfield(15, 15, 0.5, Players);
             isGameRunning = true;
         }
 
@@ -41,6 +41,9 @@ namespace Bomberman.Server.GameLogic
             {
                 player.IsMoving = isMoving;
                 player.PlayerDirection = direction;
+            } else if (player != null && player.Lives <= 0)
+            {
+                player.IsMoving = false;
             }
         }
 
@@ -106,20 +109,25 @@ namespace Bomberman.Server.GameLogic
             //tick players
             foreach (var player in _gameState.Playfield.Players.ToList())
             {
-                //if player is invincible and not in an explosion revoke invincibility
-                if (player.IsInvincible && !_gameState.Playfield.Explosions.Any(e =>
-                        e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)))
+                // tick invincibility
+                if (player.IsInvincible)
                 {
-                    player.IsInvincible = false;
+                    player.InvincibilityTicks--;
+                    if (player.InvincibilityTicks <= 0)
+                    {
+                        player.IsInvincible = false;
+                        player.InvincibilityTicks = 0;
+                    }
                 }
 
-                //ckech if player is in explosion and is not invincible
+                // if player is in an explosion and not invincible, remove a life and make player invincible
                 if (_gameState.Playfield.Explosions.Any(e =>
                         e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)) &&
                     player.IsInvincible == false)
                 {
                     player.Lives--;
                     player.IsInvincible = true;
+                    player.InvincibilityTicks = GlobalSettings.INVINCIBILITY_TIME * GlobalSettings.TICK_RATE;
                 }
 
                 //move player

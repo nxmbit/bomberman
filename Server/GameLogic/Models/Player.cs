@@ -18,7 +18,8 @@ namespace Bomberman.Server.GameLogic
         public bool IsReady { get; set; }
         public int Score {get; set;}
         public int BombLimit { get; set; }
-        public bool IsInvincible = false;
+        public bool IsInvincible { get; set; }
+        public int InvincibilityTicks = 0;
         public bool IsMoving = false;
         public String PlayerDirection = Direction.DOWN;
 
@@ -33,6 +34,7 @@ namespace Bomberman.Server.GameLogic
             BombLimit = GlobalSettings.INITIAL_BOMB_LIMIT;
             Score = 0;
             IsReady = false;
+            IsInvincible = false;
         }
     }
 

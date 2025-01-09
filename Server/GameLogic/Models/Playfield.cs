@@ -14,7 +14,7 @@ namespace Bomberman.Server.GameLogic
         public List<Player> Players { get; set; }
         public Timer Timer { get; set; }
 
-        public enum SpawnPoints
+        private enum SpawnPoints
         {
             TopLeft,
             BottomLeft,
@@ -22,7 +22,7 @@ namespace Bomberman.Server.GameLogic
             BottomRight
         }
 
-        public readonly Dictionary<SpawnPoints, (int X, int Y)> SpawnPointLocations;
+        private readonly Dictionary<SpawnPoints, (int X, int Y)> SpawnPointLocations;
 
         //TODO generate map and items
         public Playfield(int width, int height, double blockDensity, List<Player> Players)
