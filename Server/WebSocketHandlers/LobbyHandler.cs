@@ -31,6 +31,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         await SendMessageAsync(socket, response);
                         Console.WriteLine($"Player {playerId} joined the lobby");
                         await BroadcastLobbyState();
+                        await BroadcastLobbySettings();
                     } else {
                         var response = new {
                             Type = ServerCommandType.SERVER_LOBBY_JOIN,
