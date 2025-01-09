@@ -48,8 +48,9 @@ namespace Bomberman.Server.WebSocketHandlers
                         {
                             await SendMessageAsync(sock, new { Type = ServerCommandType.SERVER_GAME_START });
                         }
+                        var playersCopy = new List<Player>(_lobbyService.GetPlayers());
                         Console.WriteLine(_lobbyService.GetPlayers());
-                        _gameHandler.startGame(_lobbyService.GetPlayers());
+                        _gameHandler.startGame(playersCopy);
                         _lobbyService.resetLobby();
                     }
                     break;

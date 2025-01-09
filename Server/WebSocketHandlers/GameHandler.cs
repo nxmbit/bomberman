@@ -71,7 +71,7 @@ namespace Bomberman.Server.WebSocketHandlers
                 Payload = outcome
             };
             await BroadcastMessageAsync(msg);
-            Console.WriteLine("Game over");
+            Console.WriteLine("Game over: " + outcome);
         }
 
         private async Task BroadcastGameState()

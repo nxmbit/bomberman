@@ -14,17 +14,18 @@ namespace Bomberman.Server.GameLogic
         public string Name { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
-        public int Lives = GlobalSettings.LIVES;
-        public bool IsInvincible = false;
+        public int Lives { get; set; }
         public bool IsReady { get; set; }
+        public int Score {get; set;}
+        public bool IsInvincible = false;
         public bool IsMoving = false;
         public String PlayerDirection = Direction.DOWN;
-        public int Score {get; set;}
 
         public Player(string id, string name)
         {
             Id = id;
             Name = name;
+            Lives = GlobalSettings.LIVES;
             X = 0;
             Y = 0;
             Score = 0;
