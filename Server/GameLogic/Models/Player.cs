@@ -22,6 +22,7 @@ namespace Bomberman.Server.GameLogic
         public bool IsMoving = false;
         public String PlayerDirection = Direction.DOWN;
 
+
         public Player(string id, string name)
         {
             Id = id;

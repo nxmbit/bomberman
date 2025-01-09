@@ -19,7 +19,7 @@ namespace Bomberman.Server.GameLogic
 
         public void StartGame(List<Player> Players)
         {
-            _gameState.Playfield = new Playfield(15, 15, 0.5, Players);
+            _gameState.Playfield = new Playfield(15, 15, 1, Players);
             isGameRunning = true;
         }
 

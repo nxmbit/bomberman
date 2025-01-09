@@ -14,6 +14,16 @@ namespace Bomberman.Server.GameLogic
         public List<Player> Players { get; set; }
         public Timer Timer { get; set; }
 
+        public enum SpawnPoints
+        {
+            TopLeft,
+            BottomLeft,
+            TopRight,
+            BottomRight
+        }
+
+        public readonly Dictionary<SpawnPoints, (int X, int Y)> SpawnPointLocations;
+
         //TODO generate map and items
         public Playfield(int width, int height, double blockDensity, List<Player> Players)
         {
@@ -25,13 +35,58 @@ namespace Bomberman.Server.GameLogic
             this.Explosions = new List<Explosion>();
             this.Items = new List<Item>();
             this.Players = Players;
-            this.Timer = new Timer(); //TODO: implemt timer
-            
-            Random random = new Random();
-            //generate blocks
+            this.Timer = new Timer();
+            var random = new Random();
+
+            SpawnPointLocations = new Dictionary<SpawnPoints, (int X, int Y)>
+            {
+                {SpawnPoints.TopLeft, (1, 1)},
+                {SpawnPoints.BottomLeft, (1, height - 2)},
+                {SpawnPoints.TopRight, (width - 2, 1)},
+                {SpawnPoints.BottomRight, (width - 2, height - 2)}
+            };
+
+            // randomly select a spawn point for each player
+            var shuffledSpawnPoints = Enum.GetValues(typeof(SpawnPoints)).Cast<SpawnPoints>().OrderBy(x => random.Next()).ToList();
+            for (int i = 0; i < Players.Count; i++)
+            {
+                var spawnPoint = shuffledSpawnPoints[i];
+                var location = SpawnPointLocations[spawnPoint];
+                Players[i].X = location.X;
+                Players[i].Y = location.Y;
+            }
+
+            // Code for generating the map, the width and height should be odd numbers as
+            // the walls are placed on odd coordinates (except of the border). The map has a border of walls.
+
+            //Check if width and height are odd, if not add 1
+            if (width % 2 == 0)
+            {
+                width++;
+            }
+
+            if (height % 2 == 0)
+            {
+                height++;
+            }
+
+            //generate border
             for (int x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                Walls.Add(new Wall(x, 0));
+                Walls.Add(new Wall(x, height - 1));
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                Walls.Add(new Wall(0, y));
+                Walls.Add(new Wall(width - 1, y));
+            }
+
+            //generate blocks
+            for (int x = 1; x < width - 1; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
                 {
                     if (random.NextDouble() < blockDensity)
                     {
@@ -41,15 +96,15 @@ namespace Bomberman.Server.GameLogic
             }
             
             //clear player spawn areas
-            Blocks.RemoveAll(b => b.X < 2 && b.Y < 2);
-            Blocks.RemoveAll(b => b.X < 2 && b.Y > height - 3);
-            Blocks.RemoveAll(b => b.X > width - 3 && b.Y < 2);
-            Blocks.RemoveAll(b => b.X > width - 3 && b.Y > height - 3);
+            Blocks.RemoveAll(b => b.X < 3 && b.Y < 3); //top left
+            Blocks.RemoveAll(b => b.X < 3 && b.Y > height - 4); //bottom left
+            Blocks.RemoveAll(b => b.X > width - 4 && b.Y < 3); //top right
+            Blocks.RemoveAll(b => b.X > width - 4 && b.Y > height - 4); //bottom right
 
             //generate walls
-            for (int x = 1; x < width; x += 2)
+            for (int x = 2; x < width; x += 2)
             {
-                for (int y = 1; y < height; y += 2)
+                for (int y = 2; y < height; y += 2)
                 {
                     Walls.Add(new Wall(x, y));
                     //check if a wall is there and delete it
@@ -58,9 +113,9 @@ namespace Bomberman.Server.GameLogic
             }
             
             //generate items
-            for (int x = 0; x < width; x++)
+            for (int x = 1; x < width - 1; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (int y = 1; y < height - 1; y++)
                 {
                     if (random.NextDouble() < 0.1)
                     {
