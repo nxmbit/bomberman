@@ -15,15 +15,16 @@ namespace Bomberman.Server.WebSocketHandlers
             _gameHandler = gameHandler;
         }
 
-        public async Task HandleAsync(string playerId, string type, string payload, WebSocket socket)
+        public async Task HandleAsync(string playerId, string type, JsonElement payload, WebSocket socket)
         {
+            Dictionary<string, dynamic> data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(payload);
             switch (type)
             {
                 case ClientCommandType.CLIENT_LOBBY_JOIN:
                     Console.WriteLine("type: " + type);
                     Console.WriteLine("payload: " + payload);
                     if (_lobbyService.CanAddPlayer()) {
-                        _lobbyService.AddPlayer(playerId, payload);
+                        _lobbyService.AddPlayer(playerId, data["Name"].ToString());
                         var response = new {
                             Type = ServerCommandType.SERVER_LOBBY_JOIN,
                             Payload = new {Response = "OK", PlayerId = playerId}
@@ -58,22 +59,31 @@ namespace Bomberman.Server.WebSocketHandlers
                     break;
 
                 case ClientCommandType.CLIENT_LOBBY_UPDATE_SETTINGS:
-                    Dictionary<string, dynamic> data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(payload);
+                    try
+                    {
 
-                    int width = _lobbyService.GetGameParameters().Width;
-                    int height = _lobbyService.GetGameParameters().Height;
-                    double blockDensity = _lobbyService.GetGameParameters().BlockDensity;
-                    int gameTime = _lobbyService.GetGameParameters().GameTime;
-                    int lives = _lobbyService.GetGameParameters().Lives;
+                        int width = _lobbyService.GetGameParameters().Width;
+                        int height = _lobbyService.GetGameParameters().Height;
+                        double blockDensity = _lobbyService.GetGameParameters().BlockDensity;
+                        int gameTime = _lobbyService.GetGameParameters().GameTime;
+                        Console.WriteLine("==================gameTime: " + gameTime);
+                        int lives = _lobbyService.GetGameParameters().Lives;
 
-                    if (data.TryGetValue("Width", out var widthValue)) width = (int)widthValue;
-                    if (data.TryGetValue("Height", out var heightValue)) height = (int)heightValue;
-                    if (data.TryGetValue("BlockDensity", out var blockDensityValue)) blockDensity = (double)blockDensityValue;
-                    if (data.TryGetValue("GameTime", out var gameTimeValue)) gameTime = (int)gameTimeValue;
-                    if (data.TryGetValue("Lives", out var livesValue)) lives = (int)livesValue;
+                        if (data.TryGetValue("Width", out var widthValue)) width = widthValue.GetInt32();
+                        if (data.TryGetValue("Height", out var heightValue)) height = heightValue.GetInt32();
+                        if (data.TryGetValue("BlockDensity", out var blockDensityValue))
+                            blockDensity = blockDensityValue.GetDouble();
+                        if (data.TryGetValue("GameTime", out var gameTimeValue)) gameTime = gameTimeValue.GetInt32();
+                        if (data.TryGetValue("Lives", out var livesValue)) lives = (int)livesValue.GetInt32();
 
-                    _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives);
-                    await BroadcastLobbySettings();
+                        _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives);
+                        await BroadcastLobbySettings();
+                    }
+                    catch (JsonException e)
+                    {
+                        Console.WriteLine("Failed to parse lobby settings update: " + e.Message);
+                    }
+
                     break;
 
                 case ClientCommandType.CLIENT_LOBBY_UNREADY:
@@ -82,10 +92,10 @@ namespace Bomberman.Server.WebSocketHandlers
                     break;
 
                 case ClientCommandType.CLIENT_LOBBY_CHANGE_NAME:
-                    _lobbyService.SetPlayerName(playerId, payload);
+                    _lobbyService.SetPlayerName(playerId, data["Name"].ToString());
                     await BroadcastLobbyState();
                     break;
-                
+
             }
         }
 
