@@ -13,6 +13,7 @@ namespace Bomberman.Server.WebSocketHandlers
         {
             var json = JsonSerializer.Serialize(message);
             var buffer = Encoding.UTF8.GetBytes(json);
+            Console.WriteLine("Broadcasting message: " + json);
             await socket.SendAsync(
                 new ArraySegment<byte>(buffer),
                 WebSocketMessageType.Text,

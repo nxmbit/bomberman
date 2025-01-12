@@ -29,7 +29,7 @@ namespace Bomberman.Server.GameLogic
             int bombsPlaced = _gameState.Playfield.Bombs.Count(b => b.OwnerId == playerId);
             if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit)
             {
-                var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y));
+                var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y), player.BombPower);
                 _gameState.Playfield.Bombs.Add(bomb);
             }
         }

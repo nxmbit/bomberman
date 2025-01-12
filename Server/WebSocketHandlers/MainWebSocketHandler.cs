@@ -17,8 +17,6 @@ namespace Bomberman.Server.WebSocketHandlers
             _lobbyService = lobbyService;
             _gameHandler = gameHandler;
             _lobbyHandler = lobbyHandler;
-            //_gameHandler = new GameHandler(gameService);
-            //_lobbyHandler = new LobbyHandler(lobbyService, _gameHandler);
         }
 
         public async Task HandleAsync(WebSocket webSocket)
@@ -69,9 +67,14 @@ namespace Bomberman.Server.WebSocketHandlers
                             break;
                     }
                 }
-            } catch (Exception e)
+            }
+            catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
             {
-                Console.WriteLine("Failed to receive message from client");
+                Console.WriteLine("WebSocketException: The remote party closed the WebSocket connection without completing the close handshake");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to receive message from client: " + e);
             }
             finally
             {
@@ -79,15 +82,24 @@ namespace Bomberman.Server.WebSocketHandlers
                 {
                     // remove player from game
                     _gameHandler.RemovePlayer(playerId);
+                    _sockets.TryRemove(webSocket, out _); // remove WebSocket from collection
+
                 } else {
                     // remove player from lobby
                     _lobbyService.RemovePlayer(playerId);
                     // broadcast updated lobby state
                     var lobbyState = _lobbyService.GetLobbyState();
-                    await BroadcastMessageAsync(lobbyState);
+                    _sockets.TryRemove(webSocket, out _); // remove WebSocket from collection
+
+                    if (_lobbyService.GetPlayers().Count == 0)
+                    {
+                        _lobbyService.resetLobby();
+                    } else {
+                        await BroadcastMessageAsync(lobbyState);
+                    }
+
                 }
 
-                _sockets.TryRemove(webSocket, out _); // remove WebSocket from collection
                 Console.WriteLine($"Player {playerId} disconnected");
             }
         }

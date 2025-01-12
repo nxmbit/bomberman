@@ -18,6 +18,8 @@ namespace Bomberman.Server.GameLogic
         public bool IsReady { get; set; }
         public int Score {get; set;}
         public int BombLimit { get; set; }
+        public int BombPower { get; set; }
+        public double Speed { get; set; }
         public bool IsInvincible { get; set; }
         public int InvincibilityTicks = 0;
         public bool IsMoving = false;

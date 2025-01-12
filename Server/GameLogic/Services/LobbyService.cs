@@ -7,14 +7,26 @@ namespace Bomberman.Server.GameLogic
         private readonly Lobby _lobby = new Lobby();
         private GameParameters _gameParameters = new GameParameters();
 
+        private const int DEFAULT_WIDTH = 15;
+        private const int DEFAULT_HEIGHT = 15;
+        private const double DEFAULT_BLOCK_DENSITY = 0.5;
+        private const int DEFAULT_GAME_TIME = 180;
+        private const int DEFAULT_LIVES = 3;
+        private const int DEFAULT_START_POWER = 1;
+        private const int DEFAULT_START_BOMBS = 1;
+        private const int DEFAULT_START_SPEED = 1;
+
+
         public LobbyService()
         {
-            _gameParameters.setParameters(15, 15, 0.5, 180, 3);
+            _gameParameters.setParameters(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_BLOCK_DENSITY, DEFAULT_GAME_TIME,
+                DEFAULT_LIVES, DEFAULT_START_POWER, DEFAULT_START_BOMBS, DEFAULT_START_SPEED);
         }
 
-        public void SetGameParameters(int width, int height, double blockDensity, int gameTime, int lives)
+        public void SetGameParameters(int width, int height, double blockDensity, int gameTime, int lives, int startPower,
+            int bombRange, double startSpeed)
         {
-            _gameParameters.setParameters(width, height, blockDensity, gameTime, lives);
+            _gameParameters.setParameters(width, height, blockDensity, gameTime, lives, startPower, bombRange, startSpeed);
         }
 
         public GameParameters GetGameParameters()
@@ -79,7 +91,8 @@ namespace Bomberman.Server.GameLogic
 
         private void ResetGameParameters()
         {
-            _gameParameters.setParameters(15, 15, 0.5 , 180, 3);
+            _gameParameters.setParameters(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_BLOCK_DENSITY, DEFAULT_GAME_TIME,
+                DEFAULT_LIVES, DEFAULT_START_POWER, DEFAULT_START_BOMBS, DEFAULT_START_SPEED);
         }
 
         public void resetLobby()

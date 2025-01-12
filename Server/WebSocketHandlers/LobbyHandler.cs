@@ -33,13 +33,8 @@ namespace Bomberman.Server.WebSocketHandlers
                         Console.WriteLine($"Player {playerId} joined the lobby");
                         await BroadcastLobbyState();
                         await BroadcastLobbySettings();
-                    } else {
-                        var response = new {
-                            Type = ServerCommandType.SERVER_LOBBY_JOIN,
-                            Payload = new {Response = "FULL", PlayerId = playerId}
-                        };
-                        await SendMessageAsync(socket, response);
                     }
+
                     break;
 
                 case ClientCommandType.CLIENT_LOBBY_READY:
@@ -61,13 +56,14 @@ namespace Bomberman.Server.WebSocketHandlers
                 case ClientCommandType.CLIENT_LOBBY_UPDATE_SETTINGS:
                     try
                     {
-
                         int width = _lobbyService.GetGameParameters().Width;
                         int height = _lobbyService.GetGameParameters().Height;
                         double blockDensity = _lobbyService.GetGameParameters().BlockDensity;
                         int gameTime = _lobbyService.GetGameParameters().GameTime;
-                        Console.WriteLine("==================gameTime: " + gameTime);
                         int lives = _lobbyService.GetGameParameters().Lives;
+                        int startPower = _lobbyService.GetGameParameters().StartPower;
+                        int startBombs = _lobbyService.GetGameParameters().StartBombs;
+                        double startSpeed = _lobbyService.GetGameParameters().StartSpeed;
 
                         if (data.TryGetValue("Width", out var widthValue)) width = widthValue.GetInt32();
                         if (data.TryGetValue("Height", out var heightValue)) height = heightValue.GetInt32();
@@ -75,8 +71,14 @@ namespace Bomberman.Server.WebSocketHandlers
                             blockDensity = blockDensityValue.GetDouble();
                         if (data.TryGetValue("GameTime", out var gameTimeValue)) gameTime = gameTimeValue.GetInt32();
                         if (data.TryGetValue("Lives", out var livesValue)) lives = (int)livesValue.GetInt32();
+                        if (data.TryGetValue("StartPower", out var startPowerValue))
+                            startPower = startPowerValue.GetInt32();
+                        if (data.TryGetValue("StartBombs", out var startBombsValue))
+                            startBombs = startBombsValue.GetInt32();
+                        if (data.TryGetValue("StartSpeed", out var startSpeedValue))
+                            startSpeed = startSpeedValue.GetDouble(); //TODO: its int in client
 
-                        _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives);
+                        _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives, startPower, startBombs, startSpeed);
                         await BroadcastLobbySettings();
                     }
                     catch (JsonException e)

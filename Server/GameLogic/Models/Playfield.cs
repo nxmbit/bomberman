@@ -24,7 +24,6 @@ namespace Bomberman.Server.GameLogic
 
         private readonly Dictionary<SpawnPoints, (int X, int Y)> SpawnPointLocations;
 
-        //TODO generate map and items
         public Playfield(GameParameters gameParameters, List<Player> Players)
         {
             this.Width = gameParameters.Width;
@@ -46,10 +45,13 @@ namespace Bomberman.Server.GameLogic
                 {SpawnPoints.BottomRight, (this.Width - 2, this.Height - 2)}
             };
 
-            // set lives for each player
+            // set player parameters
             foreach (var player in Players)
             {
                 player.Lives = gameParameters.Lives;
+                player.BombLimit = gameParameters.StartBombs;
+                player.BombPower = gameParameters.StartPower;
+                player.Speed = gameParameters.StartSpeed;
             }
 
             // randomly select a spawn point for each player
