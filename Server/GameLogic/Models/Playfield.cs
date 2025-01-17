@@ -130,7 +130,10 @@ namespace Bomberman.Server.GameLogic
                         //if there is a block create an item
                         if (Blocks.Any(b => b.X == x && b.Y == y))
                         {
-                            Items.Add(new Item(x, y, (ItemType)random.Next(0, 3)));
+                            string[] itemTypes = { ItemType.BOMB_UP, ItemType.EXPLOSION_RANGE_UP, ItemType.SPEED_UP, ItemType.LIFE_UP };
+                            //string randomItemType = itemTypes[random.Next(itemTypes.Length)];
+                            string randomItemType = ItemType.BOMB_UP;
+                            Items.Add(new Item(x, y, randomItemType));
                         }
                     }
                 }

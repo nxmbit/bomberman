@@ -15,6 +15,11 @@ namespace Bomberman.Server.GameLogic
         private readonly GameState _gameState = new GameState();
         public event Action<string> GameOver;
 
+        private const int POINTS_BLOCK_DESTROYED = 10;
+        private const int POINTS_ITEM_PICKED_UP = 25;
+        private const int POINTS_PLAYER_KILLED = 50;
+        private const int POINTS_PLAYER_ELIMINATED = 100;
+
         public GameState GetGameState() => _gameState;
 
         public void StartGame(List<Player> Players, GameParameters gameParameters)
@@ -121,13 +126,27 @@ namespace Bomberman.Server.GameLogic
                 }
 
                 // if player is in an explosion and not invincible, remove a life and make player invincible
-                if (_gameState.Playfield.Explosions.Any(e =>
-                        e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y)) &&
-                    player.IsInvincible == false)
-                {
+                var explosion = _gameState.Playfield.Explosions.FirstOrDefault(e =>
+                    e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y));
+
+                if (explosion != null && !player.IsInvincible) {
                     player.Lives--;
                     player.IsInvincible = true;
                     player.InvincibilityTicks = GlobalSettings.INVINCIBILITY_TIME * GlobalSettings.TICK_RATE;
+
+                    // add points to the player who caused the explosion
+                    var owner = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == explosion.OwnerId && player.Id != explosion.OwnerId);
+                    if (owner != null)
+                    {
+                        if (player.Lives <= 0)
+                        {
+                            owner.Score += POINTS_PLAYER_ELIMINATED;
+                        }
+                        else
+                        {
+                            owner.Score += POINTS_PLAYER_KILLED;
+                        }
+                    }
                 }
 
                 //move player
@@ -139,16 +158,16 @@ namespace Bomberman.Server.GameLogic
                     switch (player.PlayerDirection)
                     {
                         case Direction.UP:
-                            newY -= 0.1;
+                            newY -= 0.1 * player.Speed;
                             break;
                         case Direction.DOWN:
-                            newY += 0.1;
+                            newY += 0.1 * player.Speed;
                             break;
                         case Direction.LEFT:
-                            newX -= 0.1;
+                            newX -= 0.1 * player.Speed;
                             break;
                         case Direction.RIGHT:
-                            newX += 0.1;
+                            newX += 0.1 * player.Speed;
                             break;
                     }
 
@@ -222,7 +241,36 @@ namespace Bomberman.Server.GameLogic
                     player.Y = newY;
                 }
 
-                //TODO: check if player picked up an item
+                // Check if player picked up an item
+                var item = _gameState.Playfield.Items.FirstOrDefault(i =>
+                    Math.Round(player.X) == i.X && Math.Round(player.Y) == i.Y);
+
+                if (item != null)
+                {
+                    // Apply item effect to player
+                    switch (item.Type)
+                    {
+                        case ItemType.BOMB_UP:
+                            player.BombLimit++;
+                            break;
+                        case ItemType.EXPLOSION_RANGE_UP:
+                            player.BombPower++;
+                            break;
+                        case ItemType.SPEED_UP:
+                            player.Speed++;
+                            break;
+                        case ItemType.LIFE_UP:
+                            player.Lives++;
+                            break;
+                    }
+
+                    // Remove item from playfield
+                    _gameState.Playfield.Items.Remove(item);
+
+                    // Add points to player for picking up the item
+                    player.Score += POINTS_ITEM_PICKED_UP;
+                }
+
             }
         }
 
@@ -292,9 +340,10 @@ namespace Bomberman.Server.GameLogic
 
                 _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y - i, bomb.OwnerId));
             }
-            //remove blocks that were destroyed
+            //remove blocks that were destroyed and give points to the player
             foreach (var block in blocksToRemove)
             {
+                _gameState.Playfield.Players.FirstOrDefault(p => p.Id == bomb.OwnerId).Score += POINTS_BLOCK_DESTROYED;
                 _gameState.Playfield.Blocks.Remove(block);
             }
         }

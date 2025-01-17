@@ -9,9 +9,9 @@ namespace Bomberman.Server.GameLogic
         public int Lives { get; set; }
         public int StartPower { get; set; }
         public int StartBombs { get; set; }
-        public double StartSpeed { get; set; }
+        public int StartSpeed { get; set; }
 
-        public void setParameters(int width, int height, double blockDensity, int gameTime, int lives, int startPower, int startBombs, double startSpeed)
+        public void setParameters(int width, int height, double blockDensity, int gameTime, int lives, int startPower, int startBombs, int startSpeed)
         {
             Width = width;
             Height = height;

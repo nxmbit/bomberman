@@ -52,7 +52,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         break;
 
                     var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    Console.WriteLine(msg);
+                    //Console.WriteLine(msg);
                     var command = JsonSerializer.Deserialize<CommandMessage>(msg);
 
                     Console.WriteLine(command.Type);

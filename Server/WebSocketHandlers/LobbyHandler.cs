@@ -32,6 +32,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         await SendMessageAsync(socket, response);
                         Console.WriteLine($"Player {playerId} joined the lobby");
                         await BroadcastLobbyState();
+                        await Task.Delay(100);
                         await BroadcastLobbySettings();
                     }
 
@@ -63,7 +64,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         int lives = _lobbyService.GetGameParameters().Lives;
                         int startPower = _lobbyService.GetGameParameters().StartPower;
                         int startBombs = _lobbyService.GetGameParameters().StartBombs;
-                        double startSpeed = _lobbyService.GetGameParameters().StartSpeed;
+                        int startSpeed = _lobbyService.GetGameParameters().StartSpeed;
 
                         if (data.TryGetValue("Width", out var widthValue)) width = widthValue.GetInt32();
                         if (data.TryGetValue("Height", out var heightValue)) height = heightValue.GetInt32();
@@ -76,9 +77,10 @@ namespace Bomberman.Server.WebSocketHandlers
                         if (data.TryGetValue("StartBombs", out var startBombsValue))
                             startBombs = startBombsValue.GetInt32();
                         if (data.TryGetValue("StartSpeed", out var startSpeedValue))
-                            startSpeed = startSpeedValue.GetDouble(); //TODO: its int in client
+                            startSpeed = startSpeedValue.GetInt32();
 
                         _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives, startPower, startBombs, startSpeed);
+                        await Task.Delay(100);
                         await BroadcastLobbySettings();
                     }
                     catch (JsonException e)
