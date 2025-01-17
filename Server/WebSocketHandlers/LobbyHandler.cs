@@ -21,8 +21,8 @@ namespace Bomberman.Server.WebSocketHandlers
             switch (type)
             {
                 case ClientCommandType.CLIENT_LOBBY_JOIN:
-                    Console.WriteLine("type: " + type);
-                    Console.WriteLine("payload: " + payload);
+                    //Console.WriteLine("type: " + type);
+                    //Console.WriteLine("payload: " + payload);
                     if (_lobbyService.CanAddPlayer()) {
                         _lobbyService.AddPlayer(playerId, data["Name"].ToString());
                         var response = new {
@@ -32,7 +32,7 @@ namespace Bomberman.Server.WebSocketHandlers
                         await SendMessageAsync(socket, response);
                         Console.WriteLine($"Player {playerId} joined the lobby");
                         await BroadcastLobbyState();
-                        await Task.Delay(100);
+                        await Task.Delay(10);
                         await BroadcastLobbySettings();
                     }
 
@@ -80,7 +80,7 @@ namespace Bomberman.Server.WebSocketHandlers
                             startSpeed = startSpeedValue.GetInt32();
 
                         _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives, startPower, startBombs, startSpeed);
-                        await Task.Delay(100);
+                        await Task.Delay(10);
                         await BroadcastLobbySettings();
                     }
                     catch (JsonException e)

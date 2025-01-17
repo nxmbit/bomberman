@@ -32,7 +32,7 @@ namespace Bomberman.Server.GameLogic
         {
             Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
             int bombsPlaced = _gameState.Playfield.Bombs.Count(b => b.OwnerId == playerId);
-            if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit)
+            if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit && !_gameState.Playfield.Bombs.Any(b => b.X == (int)Math.Round(player.X) && b.Y == (int)Math.Round(player.Y)))
             {
                 var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y), player.BombPower);
                 _gameState.Playfield.Bombs.Add(bomb);
@@ -67,6 +67,9 @@ namespace Bomberman.Server.GameLogic
                 Console.WriteLine("Stopping the game as there are no players connected");
                 return;
             }
+
+            //check if there is only one player left w
+
 
             //tick timer
             _gameState.Playfield.Timer.Tick();
@@ -133,6 +136,12 @@ namespace Bomberman.Server.GameLogic
                     player.Lives--;
                     player.IsInvincible = true;
                     player.InvincibilityTicks = GlobalSettings.INVINCIBILITY_TIME * GlobalSettings.TICK_RATE;
+
+                    if (player.Lives <= 0)
+                    {
+                        player.X = 0;
+                        player.Y = 0;
+                    }
 
                     // add points to the player who caused the explosion
                     var owner = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == explosion.OwnerId && player.Id != explosion.OwnerId);
@@ -276,6 +285,7 @@ namespace Bomberman.Server.GameLogic
 
         private void ExplodeBomb(Bomb bomb) //TODO why 2 calls to this method?
         {
+            Console.WriteLine("Exploding bomb at " + bomb.X + ", " + bomb.Y);
             // search for walls and blocks in explosion range
             // add an explosion for each valid tile
 
