@@ -22,14 +22,16 @@ namespace Bomberman.Server.GameLogic
         public double Speed { get; set; }
         public bool IsInvincible { get; set; }
         public int InvincibilityTicks { get; set; }
+        public string Color { get; set; }
         public bool IsMoving = false;
-        public String PlayerDirection = Direction.DOWN;
+        public string PlayerDirection = Direction.DOWN;
 
 
-        public Player(string id, string name)
+        public Player(string id, string name, string color)
         {
             Id = id;
             Name = name;
+            Color = color;
             Lives = GlobalSettings.LIVES;
             X = 0;
             Y = 0;
