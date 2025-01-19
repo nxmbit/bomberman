@@ -62,14 +62,10 @@ namespace Bomberman.Server.GameLogic
 
         private (bool isDraw, string? winnerName) GetEndGameInfo()
         {
-            // Get the highest score
-            var highestScore = _gameState.Playfield.Players.Max(p => p.Score);
 
-            // Get all players with the highest score
+            // Get all players alive
             var winners = _gameState.Playfield.Players
-                .Where(p => p.Score == highestScore)
-                .Select(p => p.Name)
-                .ToList();
+                .Where(p => p.Lives > 0).Select( p => p.Name).ToList();
 
             bool isDraw = winners.Count > 1;
 
