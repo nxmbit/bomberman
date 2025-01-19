@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Bomberman.Server.GameLogic;
 using Bomberman.Server.WebSocketHandlers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,11 @@ builder.Services.AddSingleton<LobbyService>();
 builder.Services.AddSingleton<GameHandler>();
 builder.Services.AddSingleton<LobbyHandler>();
 builder.Services.AddTransient<MainWebSocketHandler>();
+builder.Services.AddSingleton<PasswordService>();
+
+builder.Services.AddDbContext<ScoreboardDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 

@@ -25,7 +25,7 @@ namespace Bomberman.Server.GameLogic
         public string Color { get; set; }
         public bool IsMoving = false;
         public string PlayerDirection = Direction.DOWN;
-
+        private User User;
 
         public Player(string id, string name, string color)
         {
@@ -39,6 +39,11 @@ namespace Bomberman.Server.GameLogic
             Score = 0;
             IsReady = false;
             IsInvincible = false;
+        }
+
+        public int GetUserID()
+        {
+            return User.Id;
         }
     }
 

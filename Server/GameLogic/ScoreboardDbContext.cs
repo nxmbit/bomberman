@@ -1,14 +1,21 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
 
 namespace Bomberman.Server.GameLogic
 {
     public class ScoreboardDbContext : DbContext
     {
-        public DbSet<ScoreboardEntry> Scoreboard { get; set; }
+        public DbSet<ScoreboardEntry> ScoreboardEntry { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public ScoreboardDbContext(DbContextOptions<ScoreboardDbContext> options)
+            : base(options)
         {
-            optionsBuilder.UseInMemoryDatabase("ScoreboardDB");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ScoreboardEntry>().HasNoKey();
         }
     }
 }
