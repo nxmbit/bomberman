@@ -13,7 +13,7 @@ namespace Bomberman.Server.GameLogic
     {
         public bool isGameRunning { get; set; }
         private readonly GameState _gameState = new GameState();
-        public event Action<string> GameOver;
+        public event Action<string, string?, bool> GameOver;
 
         private const int POINTS_BLOCK_DESTROYED = 10;
         private const int POINTS_ITEM_PICKED_UP = 25;
@@ -60,26 +60,51 @@ namespace Bomberman.Server.GameLogic
             _gameState.Playfield.Players.RemoveAll(p => p.Id == playerId);
         }
 
+        private (bool isDraw, string? winnerName) GetEndGameInfo()
+        {
+            // Get the highest score
+            var highestScore = _gameState.Playfield.Players.Max(p => p.Score);
+
+            // Get all players with the highest score
+            var winners = _gameState.Playfield.Players
+                .Where(p => p.Score == highestScore)
+                .Select(p => p.Name)
+                .ToList();
+
+            bool isDraw = winners.Count > 1;
+
+            return (isDraw, winners.FirstOrDefault());
+        }
+
         public void Tick()
         {
             //check if there are no players left
             if (_gameState.Playfield.Players.Count == 0)
             {
                 isGameRunning = false;
-                GameOver?.Invoke(OutcomeType.NO_PLAYERS_CONNECTED);
+                var (isDraw, winnerName) = GetEndGameInfo();
+                GameOver?.Invoke(OutcomeType.NO_PLAYERS_CONNECTED, winnerName, isDraw);
                 Console.WriteLine("Stopping the game as there are no players connected");
                 return;
             }
 
-            //check if there is only one player left w
-
+            //check if there is only one player left
+            if (_gameState.Playfield.Players.FindAll((p)=>p.Lives>0).Count == 1)
+            {
+                isGameRunning = false;
+                var (isDraw, winnerName) = GetEndGameInfo();
+                GameOver?.Invoke(OutcomeType.ALL_ELIMINATED, winnerName, isDraw);
+                Console.WriteLine("Stopping the game as there is only one player left");
+                return;
+            }
 
             //tick timer
             _gameState.Playfield.Timer.Tick();
             if (_gameState.Playfield.Timer.SecondsLeft <= 0)
             {
                 isGameRunning = false;
-                GameOver?.Invoke(OutcomeType.TIME_OUT);
+                var (isDraw, winnerName) = GetEndGameInfo();
+                GameOver?.Invoke(OutcomeType.TIME_OUT, winnerName, isDraw);
                 Console.WriteLine("Stopping the game as the timer ran out");
                 return;
             }
@@ -115,15 +140,6 @@ namespace Bomberman.Server.GameLogic
             foreach (var explosion in explosionsToRemove)
             {
                 _gameState.Playfield.Explosions.Remove(explosion);
-            }
-
-            //check if there is only one player left
-            if (_gameState.Playfield.Players.FindAll((p)=>p.Lives>0).Count == 1)
-            {
-                isGameRunning = false;
-                GameOver?.Invoke(OutcomeType.ALL_ELIMINATED);
-                Console.WriteLine("Stopping the game as there is only one player left");
-                return;
             }
             
             //tick players

@@ -62,16 +62,21 @@ namespace Bomberman.Server.WebSocketHandlers
             await BroadcastGameState();
         }
 
-        private async void OnGameOver(string outcome)
+        private async void OnGameOver(string outcome, string? winnerName, bool isDraw)
         {
             _timer.Enabled = false;
             var msg = new
             {
                 Type = ServerCommandType.SERVER_GAME_OVER,
-                Payload = outcome
+                Payload = new
+                {
+                    Outcome = outcome,
+                    Draw = isDraw,
+                    Winner = isDraw ? null : winnerName
+                }
             };
             await BroadcastMessageAsync(msg);
-            Console.WriteLine("Game over: " + outcome);
+            Console.WriteLine($"Game over: {outcome}, Winner: {winnerName}");
         }
 
         private async Task BroadcastGameState()
