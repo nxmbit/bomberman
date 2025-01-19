@@ -76,6 +76,10 @@ namespace Bomberman.Server.GameLogic
 
         public bool AreAllPlayersReady()
         {
+            if (_lobby.Players.Count == 1)
+            {
+                return false;
+            }
             return _lobby.Players.TrueForAll(p => p.IsReady);
         }
 

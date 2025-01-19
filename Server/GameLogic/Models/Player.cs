@@ -21,7 +21,7 @@ namespace Bomberman.Server.GameLogic
         public int BombPower { get; set; }
         public double Speed { get; set; }
         public bool IsInvincible { get; set; }
-        public int InvincibilityTicks = 0;
+        public int InvincibilityTicks { get; set; }
         public bool IsMoving = false;
         public String PlayerDirection = Direction.DOWN;
 

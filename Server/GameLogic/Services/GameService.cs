@@ -32,7 +32,9 @@ namespace Bomberman.Server.GameLogic
         {
             Player player = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == playerId);
             int bombsPlaced = _gameState.Playfield.Bombs.Count(b => b.OwnerId == playerId);
-            if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit && !_gameState.Playfield.Bombs.Any(b => b.X == (int)Math.Round(player.X) && b.Y == (int)Math.Round(player.Y)))
+            if (player != null && player.Lives > 0 && bombsPlaced < player.BombLimit &&
+                !_gameState.Playfield.Bombs.Any(b =>
+                    b.X == (int)Math.Round(player.X) && b.Y == (int)Math.Round(player.Y)))
             {
                 var bomb = new Bomb(playerId, (int)Math.Round(player.X), (int)Math.Round(player.Y), player.BombPower);
                 _gameState.Playfield.Bombs.Add(bomb);
@@ -46,7 +48,8 @@ namespace Bomberman.Server.GameLogic
             {
                 player.IsMoving = isMoving;
                 player.PlayerDirection = direction;
-            } else if (player != null && player.Lives <= 0)
+            }
+            else if (player != null && player.Lives <= 0)
             {
                 player.IsMoving = false;
             }
@@ -114,6 +117,15 @@ namespace Bomberman.Server.GameLogic
                 _gameState.Playfield.Explosions.Remove(explosion);
             }
 
+            //check if there is only one player left
+            if (_gameState.Playfield.Players.FindAll((p)=>p.Lives>0).Count == 1)
+            {
+                isGameRunning = false;
+                GameOver?.Invoke(OutcomeType.ALL_ELIMINATED);
+                Console.WriteLine("Stopping the game as there is only one player left");
+                return;
+            }
+            
             //tick players
             foreach (var player in _gameState.Playfield.Players.ToList())
             {
@@ -132,7 +144,8 @@ namespace Bomberman.Server.GameLogic
                 var explosion = _gameState.Playfield.Explosions.FirstOrDefault(e =>
                     e.X == (int)Math.Round(player.X) && e.Y == (int)Math.Round(player.Y));
 
-                if (explosion != null && !player.IsInvincible) {
+                if (explosion != null && !player.IsInvincible)
+                {
                     player.Lives--;
                     player.IsInvincible = true;
                     player.InvincibilityTicks = GlobalSettings.INVINCIBILITY_TIME * GlobalSettings.TICK_RATE;
@@ -144,7 +157,8 @@ namespace Bomberman.Server.GameLogic
                     }
 
                     // add points to the player who caused the explosion
-                    var owner = _gameState.Playfield.Players.FirstOrDefault(p => p.Id == explosion.OwnerId && player.Id != explosion.OwnerId);
+                    var owner = _gameState.Playfield.Players.FirstOrDefault(p =>
+                        p.Id == explosion.OwnerId && player.Id != explosion.OwnerId);
                     if (owner != null)
                     {
                         if (player.Lives <= 0)
@@ -167,24 +181,27 @@ namespace Bomberman.Server.GameLogic
                     switch (player.PlayerDirection)
                     {
                         case Direction.UP:
-                            newY -= 0.1 * player.Speed;
+                            newY -= 0.1 + 0.04 * player.Speed;
                             break;
                         case Direction.DOWN:
-                            newY += 0.1 * player.Speed;
+                            newY += 0.1 + 0.04 * player.Speed;
                             break;
                         case Direction.LEFT:
-                            newX -= 0.1 * player.Speed;
+                            newX -= 0.1 + 0.04 * player.Speed;
                             break;
                         case Direction.RIGHT:
-                            newX += 0.1 * player.Speed;
+                            newX += 0.1 + 0.04 * player.Speed;
                             break;
                     }
 
                     // Check for collision with walls and blocks
                     bool isCollision = _gameState.Playfield.Walls.Any(w =>
-                                           newX + 1> w.X && newX < w.X + 1 &&
+                                           newX + 1 > w.X && newX < w.X + 1 &&
                                            newY + 1 > w.Y && newY < w.Y + 1) ||
                                        _gameState.Playfield.Blocks.Any(b =>
+                                           newX + 1 > b.X && newX < b.X + 1 &&
+                                           newY + 1 > b.Y && newY < b.Y + 1) ||
+                                       _gameState.Playfield.Bombs.Any(b =>
                                            newX + 1 > b.X && newX < b.X + 1 &&
                                            newY + 1 > b.Y && newY < b.Y + 1);
 
@@ -194,54 +211,72 @@ namespace Bomberman.Server.GameLogic
                         switch (player.PlayerDirection)
                         {
                             case Direction.UP:
-                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) == w.X &&Math.Round(player.Y) -1 == w.Y) &&
-                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) == b.X && Math.Round(player.Y) - 1 == b.Y))
+                                if (!_gameState.Playfield.Walls.Any(w =>
+                                        Math.Round(player.X) == w.X && Math.Round(player.Y) - 1 == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b =>
+                                        Math.Round(player.X) == b.X && Math.Round(player.Y) - 1 == b.Y) &&
+                                    !_gameState.Playfield.Bombs.Any(b =>
+                                        Math.Round(player.X) == b.X && Math.Round(player.Y) - 1 == b.Y))
                                 {
                                     newX = Math.Round(player.X);
                                 }
                                 else
                                 {
                                     newX = player.X;
-                                    newY = player.Y;
+                                    newY = Math.Round(player.Y);
                                 }
 
                                 break;
                             case Direction.DOWN:
-                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) == w.X && Math.Round(player.Y) + 1 == w.Y) &&
-                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) == b.X && Math.Round(player.Y) + 1 == b.Y))
+                                if (!_gameState.Playfield.Walls.Any(w =>
+                                        Math.Round(player.X) == w.X && Math.Round(player.Y) + 1 == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b =>
+                                        Math.Round(player.X) == b.X && Math.Round(player.Y) + 1 == b.Y) &&
+                                    !_gameState.Playfield.Bombs.Any(b =>
+                                        Math.Round(player.X) == b.X && Math.Round(player.Y) + 1 == b.Y))
                                 {
                                     newX = Math.Round(player.X);
                                 }
                                 else
                                 {
                                     newX = player.X;
-                                    newY = player.Y;
+                                    newY = Math.Round(player.Y);
                                 }
 
                                 break;
                             case Direction.LEFT:
-                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) - 1 == w.X && Math.Round(player.Y) == w.Y) &&
-                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) - 1 == b.X && Math.Round(player.Y) == b.Y))
+                                if (!_gameState.Playfield.Walls.Any(w =>
+                                        Math.Round(player.X) - 1 == w.X && Math.Round(player.Y) == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b =>
+                                        Math.Round(player.X) - 1 == b.X && Math.Round(player.Y) == b.Y) &&
+                                    !_gameState.Playfield.Bombs.Any(b =>
+                                        Math.Round(player.X) - 1 == b.X && Math.Round(player.Y) == b.Y))
                                 {
                                     newY = Math.Round(player.Y);
                                 }
                                 else
                                 {
-                                    newX = player.X;
+                                    newX = Math.Round(player.X);
                                     newY = player.Y;
                                 }
+
                                 break;
                             case Direction.RIGHT:
-                                if (!_gameState.Playfield.Walls.Any(w => Math.Round(player.X) + 1 == w.X && Math.Round(player.Y) == w.Y) &&
-                                    !_gameState.Playfield.Blocks.Any(b => Math.Round(player.X) + 1 == b.X && Math.Round(player.Y) == b.Y))
+                                if (!_gameState.Playfield.Walls.Any(w =>
+                                        Math.Round(player.X) + 1 == w.X && Math.Round(player.Y) == w.Y) &&
+                                    !_gameState.Playfield.Blocks.Any(b =>
+                                        Math.Round(player.X) + 1 == b.X && Math.Round(player.Y) == b.Y) &&
+                                    !_gameState.Playfield.Bombs.Any(b =>
+                                        Math.Round(player.X) + 1 == b.X && Math.Round(player.Y) == b.Y))
                                 {
                                     newY = Math.Round(player.Y);
                                 }
                                 else
                                 {
-                                    newX = player.X;
+                                    newX = Math.Round(player.X);
                                     newY = player.Y;
                                 }
+
                                 break;
                         }
                     }
@@ -279,7 +314,6 @@ namespace Bomberman.Server.GameLogic
                     // Add points to player for picking up the item
                     player.Score += POINTS_ITEM_PICKED_UP;
                 }
-
             }
         }
 
@@ -303,6 +337,7 @@ namespace Bomberman.Server.GameLogic
                 if (blocks.Any(b => b.X == bomb.X + i && b.Y == bomb.Y))
                 {
                     blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X + i && b.Y == bomb.Y));
+                    _gameState.Playfield.Explosions.Add(new Explosion(bomb.X + i, bomb.Y, bomb.OwnerId));
                     break;
                 }
 
@@ -317,6 +352,7 @@ namespace Bomberman.Server.GameLogic
                 if (blocks.Any(b => b.X == bomb.X - i && b.Y == bomb.Y))
                 {
                     blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X - i && b.Y == bomb.Y));
+                    _gameState.Playfield.Explosions.Add(new Explosion(bomb.X - i, bomb.Y, bomb.OwnerId));
                     break;
                 }
 
@@ -331,6 +367,7 @@ namespace Bomberman.Server.GameLogic
                 if (blocks.Any(b => b.X == bomb.X && b.Y == bomb.Y + i))
                 {
                     blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X && b.Y == bomb.Y + i));
+                    _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y + i, bomb.OwnerId));
                     break;
                 }
 
@@ -345,11 +382,13 @@ namespace Bomberman.Server.GameLogic
                 if (blocks.Any(b => b.X == bomb.X && b.Y == bomb.Y - i))
                 {
                     blocksToRemove.AddRange(blocks.FindAll(b => b.X == bomb.X && b.Y == bomb.Y - i));
+                    _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y - i, bomb.OwnerId));
                     break;
                 }
 
                 _gameState.Playfield.Explosions.Add(new Explosion(bomb.X, bomb.Y - i, bomb.OwnerId));
             }
+
             //remove blocks that were destroyed and give points to the player
             foreach (var block in blocksToRemove)
             {
@@ -357,6 +396,5 @@ namespace Bomberman.Server.GameLogic
                 _gameState.Playfield.Blocks.Remove(block);
             }
         }
-        
     }
 }
