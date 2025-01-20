@@ -16,6 +16,7 @@ builder.Services.AddSingleton<PasswordService>();
 builder.Services.AddSingleton<ScoreboardService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddTransient<MainWebSocketHandler>();
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ScoreboardDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -26,6 +27,9 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseWebSockets();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 app.Map("/ws", async context =>
 {

@@ -39,4 +39,13 @@ public class ScoreboardService
     // {
     //     return _context.ScoreboardEntry.OrderByDescending(e => e.TotalScore).ToList();
     // }
+    public object? GetTop20Records()
+    {
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            Console.WriteLine("GetTop20Records");
+            var _context = scope.ServiceProvider.GetRequiredService<ScoreboardDbContext>();
+            return _context.ScoreboardEntry.ToList();
+        }
+    }
 }
