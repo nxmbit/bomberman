@@ -18,18 +18,19 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddTransient<MainWebSocketHandler>();
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<ScoreboardDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// Add CORS services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
     {
         builder.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
+
+builder.Services.AddDbContext<ScoreboardDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -40,6 +41,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
+// Use CORS policy
 app.UseCors("AllowAll");
 
 app.Map("/ws", async context =>
@@ -47,7 +49,9 @@ app.Map("/ws", async context =>
     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
     var handler = context.RequestServices.GetRequiredService<MainWebSocketHandler>();
     await handler.HandleAsync(webSocket);
-    
 });
+
+// Serve the default page
+app.MapFallbackToFile("index.html");
 
 app.Run();
