@@ -50,4 +50,5 @@ app.Map("/ws", async context =>
     
 });
 
-app.Run();
+var url = builder.Configuration["Kestrel:Endpoints:Http:Url"];
+app.Run(url);
