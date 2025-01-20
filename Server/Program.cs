@@ -21,6 +21,15 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ScoreboardDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -30,6 +39,8 @@ app.UseWebSockets();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+app.UseCors("AllowAll");
 
 app.Map("/ws", async context =>
 {

@@ -35,10 +35,6 @@ public class ScoreboardService
         }
     }
 
-    // public List<ScoreboardEntry> GetScoreboard()
-    // {
-    //     return _context.ScoreboardEntry.OrderByDescending(e => e.TotalScore).ToList();
-    // }
     public object? GetTop20Records()
     {
         using (var scope = _serviceProvider.CreateScope())
