@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Bomberman.Server.GameLogic;
 
 public class ScoreboardService
@@ -35,13 +37,29 @@ public class ScoreboardService
         }
     }
 
-    public object? GetTop20Records()
+    public object? GetTopScoreRecords()
     {
         using (var scope = _serviceProvider.CreateScope())
         {
-            Console.WriteLine("GetTop20Records");
             var _context = scope.ServiceProvider.GetRequiredService<ScoreboardDbContext>();
-            return _context.ScoreboardEntry.ToList();
+            var topRecords = _context.ScoreboardEntry
+                .Include(e => e.User)
+                .Select(e => new
+                {
+                    e.StoredKDRatio,
+                    e.TopScore,
+                    e.TotalDeaths,
+                    e.TotalEliminations,
+                    e.TotalKills,
+                    e.TotalMatches,
+                    e.TotalPickedUpPowerups,
+                    e.TotalScore,
+                    e.TotalWins,
+                    e.User.Username
+                })
+                .OrderByDescending(e => e.TotalScore)
+                .ToList();
+            return topRecords;
         }
     }
 }

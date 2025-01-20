@@ -15,10 +15,10 @@ namespace Bomberman.Server.Controllers
             _scoreboardService = scoreboardService;
         }
 
-        [HttpGet("top20")]
-        public ActionResult<List<ScoreboardEntry>> GetTop20Records()
+        [HttpGet("topScore")]
+        public ActionResult<List<ScoreboardEntry>> GetTopScoreRecords()
         {
-            var records = _scoreboardService.GetTop20Records();
+            var records = _scoreboardService.GetTopScoreRecords();
             return Ok(records);
         }
     }
