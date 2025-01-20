@@ -25,20 +25,26 @@ namespace Bomberman.Server.GameLogic
         public string Color { get; set; }
         public bool IsMoving = false;
         public string PlayerDirection = Direction.DOWN;
-        private User User;
+        private User? User;
 
-        public Player(string id, string name, string color)
+        public Player(string id, string name, string color, User? user)
         {
             Id = id;
             Name = name;
             Color = color;
             Lives = GlobalSettings.LIVES;
+            User = user;
             X = 0;
             Y = 0;
             BombLimit = GlobalSettings.INITIAL_BOMB_LIMIT;
             Score = 0;
             IsReady = false;
             IsInvincible = false;
+        }
+
+        public User? GetUser()
+        {
+            return User;
         }
 
         public int GetUserID()

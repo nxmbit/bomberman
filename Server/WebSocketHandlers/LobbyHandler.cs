@@ -15,16 +15,17 @@ namespace Bomberman.Server.WebSocketHandlers
             _gameHandler = gameHandler;
         }
 
-        public async Task HandleAsync(string playerId, string type, JsonElement payload, WebSocket socket)
+        public async Task HandleAsync(string playerId, string type, JsonElement payload, WebSocket socket, User? user)
         {
             Dictionary<string, dynamic> data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(payload);
             switch (type)
             {
                 case ClientCommandType.CLIENT_LOBBY_JOIN:
-                    //Console.WriteLine("type: " + type);
-                    //Console.WriteLine("payload: " + payload);
+                    string? username = data["Username"].ToString();
+                    string? password = data["Password"].ToString();
+
                     if (_lobbyService.CanAddPlayer()) {
-                        _lobbyService.AddPlayer(playerId, data["Name"].ToString());
+                        _lobbyService.AddPlayer(playerId, data["Name"].ToString(), user);
                         var response = new {
                             Type = ServerCommandType.SERVER_LOBBY_JOIN,
                             Payload = new {Response = "OK", PlayerId = playerId}
@@ -80,7 +81,7 @@ namespace Bomberman.Server.WebSocketHandlers
                             startSpeed = startSpeedValue.GetInt32();
 
                         _lobbyService.SetGameParameters(width, height, blockDensity, gameTime, lives, startPower, startBombs, startSpeed);
-                        await Task.Delay(10);
+                        await Task.Delay(100);
                         await BroadcastLobbySettings();
                     }
                     catch (JsonException e)

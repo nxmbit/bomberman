@@ -13,6 +13,7 @@ namespace Bomberman.Server.GameLogic
     {
         public bool isGameRunning { get; set; }
         private readonly GameState _gameState = new GameState();
+        private readonly ScoreboardService _scoreboardService;
         public event Action<string, string?, bool> GameOver;
 
         private const int POINTS_BLOCK_DESTROYED = 10;
@@ -20,11 +21,36 @@ namespace Bomberman.Server.GameLogic
         private const int POINTS_PLAYER_KILLED = 50;
         private const int POINTS_PLAYER_ELIMINATED = 100;
 
+        // dictionaries for holding statistics for each player
+        private Dictionary<string, int> _playerKills;
+        private Dictionary<string, int> _playerDeaths;
+        private Dictionary<string, int> _playerPickedPowerups;
+        private Dictionary<string, int> _playerEliminations;
+
+        public GameService(ScoreboardService scoreboardService)
+        {
+            _scoreboardService = scoreboardService;
+        }
+
         public GameState GetGameState() => _gameState;
 
         public void StartGame(List<Player> Players, GameParameters gameParameters)
         {
             _gameState.Playfield = new Playfield(gameParameters, Players);
+
+            _playerKills = new Dictionary<string, int>();
+            _playerDeaths = new Dictionary<string, int>();
+            _playerPickedPowerups = new Dictionary<string, int>();
+            _playerEliminations = new Dictionary<string, int>();
+
+            foreach (var player in Players)
+            {
+                _playerKills.Add(player.Id, 0);
+                _playerDeaths.Add(player.Id, 0);
+                _playerPickedPowerups.Add(player.Id, 0);
+                _playerEliminations.Add(player.Id, 0);
+            }
+
             isGameRunning = true;
         }
 
@@ -60,25 +86,57 @@ namespace Bomberman.Server.GameLogic
             _gameState.Playfield.Players.RemoveAll(p => p.Id == playerId);
         }
 
-        private (bool isDraw, string? winnerName) GetEndGameInfo()
+        private (bool isDraw, string? winnerName, string? winnerId) GetEndGameInfo()
         {
-
-            // Get all players alive
             var winners = _gameState.Playfield.Players
-                .Where(p => p.Lives > 0).Select( p => p.Name).ToList();
+                .Where(p => p.Lives > 0).ToList();
 
             bool isDraw = winners.Count > 1;
+            string? winnerName = isDraw ? null : winners.FirstOrDefault()?.Name;
+            string? winnerId = isDraw ? null : winners.FirstOrDefault()?.Id;
 
-            return (isDraw, winners.FirstOrDefault());
+            return (isDraw, winnerName, winnerId);
+        }
+
+        private void UpdateScoreboardEndGame(bool isDraw, string? winnerId)
+        {
+            foreach (var player in _gameState.Playfield.Players)
+            {
+                var user = player.GetUser();
+                if (user != null)
+                {
+                    if (isDraw)
+                    {
+                        _scoreboardService.AddOrUpdateScoreboardEntry(user, player.Score, false, _playerKills[player.Id],
+                            _playerEliminations[player.Id], _playerDeaths[player.Id], _playerPickedPowerups[player.Id]);
+                    }
+                    else if (player.Id == winnerId)
+                    {
+                        _scoreboardService.AddOrUpdateScoreboardEntry(user, player.Score, true, _playerKills[player.Id],
+                            _playerEliminations[player.Id], _playerDeaths[player.Id], _playerPickedPowerups[player.Id]);
+                    }
+                    else
+                    {
+                        _scoreboardService.AddOrUpdateScoreboardEntry(user, player.Score, false, _playerKills[player.Id],
+                            _playerEliminations[player.Id], _playerDeaths[player.Id], _playerPickedPowerups[player.Id]);
+                    }
+                }
+            }
+
         }
 
         public void Tick()
         {
+            if (!isGameRunning)
+            {
+                return;
+            }
+
             //check if there are no players left
             if (_gameState.Playfield.Players.Count == 0)
             {
                 isGameRunning = false;
-                var (isDraw, winnerName) = GetEndGameInfo();
+                var (isDraw, winnerName, winnerId) = GetEndGameInfo();
                 GameOver?.Invoke(OutcomeType.NO_PLAYERS_CONNECTED, winnerName, isDraw);
                 Console.WriteLine("Stopping the game as there are no players connected");
                 return;
@@ -88,7 +146,8 @@ namespace Bomberman.Server.GameLogic
             if (_gameState.Playfield.Players.FindAll((p)=>p.Lives>0).Count == 1)
             {
                 isGameRunning = false;
-                var (isDraw, winnerName) = GetEndGameInfo();
+                var (isDraw, winnerName, winnerId) = GetEndGameInfo();
+                UpdateScoreboardEndGame(isDraw, winnerId);
                 GameOver?.Invoke(OutcomeType.ALL_ELIMINATED, winnerName, isDraw);
                 Console.WriteLine("Stopping the game as there is only one player left");
                 return;
@@ -99,7 +158,8 @@ namespace Bomberman.Server.GameLogic
             if (_gameState.Playfield.Timer.SecondsLeft <= 0)
             {
                 isGameRunning = false;
-                var (isDraw, winnerName) = GetEndGameInfo();
+                var (isDraw, winnerName, winnerId) = GetEndGameInfo();
+                UpdateScoreboardEndGame(isDraw, winnerId);
                 GameOver?.Invoke(OutcomeType.TIME_OUT, winnerName, isDraw);
                 Console.WriteLine("Stopping the game as the timer ran out");
                 return;
@@ -166,6 +226,11 @@ namespace Bomberman.Server.GameLogic
                     {
                         player.X = 0;
                         player.Y = 0;
+                        // TODO: how many times player was eliminated - store in db
+                    }
+                    else
+                    {
+                        _playerDeaths[player.Id]++;
                     }
 
                     // add points to the player who caused the explosion
@@ -176,10 +241,12 @@ namespace Bomberman.Server.GameLogic
                         if (player.Lives <= 0)
                         {
                             owner.Score += POINTS_PLAYER_ELIMINATED;
+                            _playerEliminations[owner.Id]++;
                         }
                         else
                         {
                             owner.Score += POINTS_PLAYER_KILLED;
+                            _playerKills[owner.Id]++;
                         }
                     }
                 }
@@ -325,6 +392,7 @@ namespace Bomberman.Server.GameLogic
 
                     // Add points to player for picking up the item
                     player.Score += POINTS_ITEM_PICKED_UP;
+                    _playerPickedPowerups[player.Id]++;
                 }
             }
         }

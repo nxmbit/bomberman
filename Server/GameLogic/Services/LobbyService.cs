@@ -54,7 +54,7 @@ namespace Bomberman.Server.GameLogic
             }
         }
 
-        public void AddPlayer(string playerId, string name)
+        public void AddPlayer(string playerId, string name, User? user)
         {
             if (_lobby.Players.TrueForAll(p => p.Id != playerId) && _lobby.MaxPlayers > _lobby.PlayersInLobby)
             {
@@ -62,7 +62,7 @@ namespace Bomberman.Server.GameLogic
                 var colorIndex = random.Next(_colors.Count);
                 var color = _colors[colorIndex];
                 _colors.RemoveAt(colorIndex);
-                _lobby.Players.Add(new Player(playerId, name, color));
+                _lobby.Players.Add(new Player(playerId, name, color, user));
             }
         }
 

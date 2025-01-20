@@ -2,6 +2,7 @@ namespace Bomberman.Server.GameLogic;
 
 public class ScoreboardEntry
 {
+    public int Id { get; set; }
     public User User { get; set; }
     public int TotalScore { get; set; }
     public int TotalWins { get; set; }
