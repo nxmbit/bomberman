@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Bomberman.Server.GameLogic;
 using Bomberman.Server.Services;
 using Bomberman.Server.WebSocketHandlers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
