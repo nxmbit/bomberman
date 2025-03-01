@@ -16,4 +16,30 @@
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
     </ItemGroup>
 
+    <Target Name="BuildFlutterClient" BeforeTargets="Build">
+        <RemoveDir Directories="$(ProjectDir)wwwroot" />
+        
+        <Exec Condition="'$(OS)' == 'Unix'" 
+              Command="bash flutter clean" 
+              WorkingDirectory="$(ProjectDir)../client" />
+        <Exec Condition="'$(OS)' == 'Unix'"
+              Command="$bash flutter build web --release" 
+              WorkingDirectory="$(ProjectDir)../client" />
+              
+        <Exec Condition="'$(OS)' == 'Windows_NT'" 
+              Command="flutter clean" 
+              WorkingDirectory="$(ProjectDir)../client" />
+        <Exec Condition="'$(OS)' == 'Windows_NT'"
+              Command="flutter build web --release" 
+              WorkingDirectory="$(ProjectDir)../client" />
+        
+        <MakeDir Directories="$(ProjectDir)wwwroot" />
+        
+        <ItemGroup>
+            <FlutterWebFiles Include="$(ProjectDir)../client/build/web/**/*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(FlutterWebFiles)" 
+              DestinationFiles="@(FlutterWebFiles->'$(ProjectDir)wwwroot/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
 </Project>
